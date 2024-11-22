@@ -34,27 +34,63 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  bool isFirstFieldFocused = false;
-  bool isSecondFieldFocused = false;
-  bool isMarkdownRendered = false; // To track if markdown should be displayed
+  bool _isMarkdownFieldFocused = false;
+  bool _isPdfFieldFocused = false;
+  bool _showMarkdown = false; // To track if markdown should be displayed
 
-  final TextEditingController firstController = TextEditingController();
-  final TextEditingController secondController = TextEditingController();
-  String markdownContent =
-      "# This is the title"; // Store content to render as markdown
+  final TextEditingController _markdownFieldController =
+      TextEditingController();
+  final TextEditingController _pdfFieldController = TextEditingController();
+  String _markdownFieldContent = ""; // Store content to render as markdown
 
   @override
   void dispose() {
     // Clean up controllers when the widget is disposed.
-    firstController.dispose();
-    secondController.dispose();
+    _markdownFieldController.dispose();
+    _pdfFieldController.dispose();
     super.dispose();
+  }
+
+  void _startMarkdown() {
+    setState(() {
+      _isMarkdownFieldFocused = true;
+      _showMarkdown = false;
+    });
+  }
+
+  void _showCommandPalette() {}
+  void _openFile() {}
+  void _startRecord() {}
+
+  void _newTab() {}
+  void _toggleMarkdownView() {
+    if (_isMarkdownFieldFocused) {
+      setState(() {
+        _showMarkdown = !_showMarkdown;
+      });
+      if(!_showMarkdown){
+        _markdownFieldController.text = _markdownFieldContent;
+      }
+    }
+  }
+
+  void _attachFile() {}
+
+  void _undoOfMarkdown() {}
+
+  void _redoOfMarkdown() {}
+
+  @override
+  void initState() {
+    super.initState();
+    // Set the initial text
+    _markdownFieldController.text = "";
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.white,
       appBar: AppBar(
         elevation: 0,
         backgroundColor: const Color(0xFFE6E6E6),
@@ -76,177 +112,120 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // If markdown is rendered, display it, otherwise show the TextFields
-          isMarkdownRendered
-              ? Expanded(
-                  child: Markdown(
-                    data: markdownContent, // Render the markdown content
+      body: _isMarkdownFieldFocused
+          ? (_showMarkdown
+              ? Markdown(
+                  data: _markdownFieldContent,
+                  styleSheet: MarkdownStyleSheet(
+                    p: const TextStyle(fontSize: 18),
                   ),
                 )
-              : Expanded(
-                  child: Focus(
-                    onFocusChange: (hasFocus) {
+              : Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    controller: _markdownFieldController,
+                    expands: true,
+                    maxLines: null,
+                    textAlignVertical: TextAlignVertical.top,
+                    decoration: const InputDecoration(
+                      hintText: 'Write your markdown text here...',
+                      filled: true,
+                      fillColor: Colors.white,
+                      focusColor: Colors.white,
+                      hoverColor: Colors.white,
+                      border: InputBorder.none
+                    ),
+                    onChanged: (value) {
                       setState(() {
-                        isFirstFieldFocused = hasFocus;
-                        if (hasFocus) {
-                          isSecondFieldFocused = false; // Hide second field
-                        }
+                        _markdownFieldContent = value;
                       });
                     },
-                    child: Visibility(
-                      visible: !isSecondFieldFocused,
-                      child: TextField(
-                        controller: firstController,
-                        expands:
-                            true, // Allows the TextField to expand to fill the space
-                        maxLines: null, // No line limit
-                        minLines: null, // Adjust automatically
-                        decoration: const InputDecoration(
-                            hintText: "@Start markdown note here",
-                            hintStyle: TextStyle(color: Color(0xFF909090)),
-                            contentPadding: EdgeInsets.all(16), // Add padding
-                            filled: true,
-                            fillColor: Color(0xFFFFFFFF)),
-                        onTap: () {
-                          setState(() {
-                            isFirstFieldFocused = true;
-                            isSecondFieldFocused = false; // Hide second field
-                          });
-                        },
-                      ),
+                  ),
+                ))
+          : ElevatedButton(
+              onPressed: _startMarkdown,
+              child: const Text("Start Markdown note")),
+
+      // Bottom Navigation Bar
+      bottomNavigationBar: _isMarkdownFieldFocused
+          ? Container(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+              decoration: const BoxDecoration(
+                  color: Color(0xFFE6E6E6),
+                  boxShadow: [
+                    BoxShadow(
+                        blurRadius: 5,
+                        color: Colors.grey,
+                        offset: Offset(0, -2))
+                  ]),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    onPressed: _showCommandPalette,
+                    icon: const Icon(
+                      CupertinoIcons.line_horizontal_3,
+                      color: Color(0xFF856DFF),
                     ),
                   ),
-                ),
-          Expanded(
-            child: Focus(
-              onFocusChange: (hasFocus) {
-                setState(() {
-                  isSecondFieldFocused = hasFocus;
-                  if (hasFocus) {
-                    isFirstFieldFocused = false; // Hide first field
-                  }
-                });
-              },
-              child: Visibility(
-                visible: !isFirstFieldFocused,
-                child: TextField(
-                  controller: secondController,
-                  expands:
-                      true, // Allows the TextField to expand to fill the space
-                  maxLines: null, // No line limit
-                  minLines: null, // Adjust automatically
-                  decoration: const InputDecoration(
-                      hintText: "@New PDF note",
-                      hintStyle: TextStyle(color: Color(0xFF909090)),
-                      contentPadding: EdgeInsets.all(16), // Add padding
-                      filled: true,
-                      fillColor: Color(0xFFFFFFFF)),
-                  onTap: () {
-                    setState(() {
-                      isSecondFieldFocused = true;
-                      isFirstFieldFocused = false; // Hide first field
-                    });
-                  },
-                ),
+                  IconButton(
+                    onPressed: () => _toggleMarkdownView(),
+                    icon: Icon(_showMarkdown?CupertinoIcons.pencil:CupertinoIcons.book,
+                        color: Color(0xFF856DFF)),
+                  ),
+                  IconButton(
+                    onPressed: _attachFile,
+                    icon: const Icon(CupertinoIcons.paperclip,
+                        color: Color(0xFF856DFF)),
+                  ),
+                  IconButton(
+                    onPressed: _undoOfMarkdown,
+                    icon: const Icon(CupertinoIcons.arrow_turn_up_left,
+                        color: Color(0xFF856DFF)),
+                  ),
+                  IconButton(
+                    onPressed: _redoOfMarkdown,
+                    icon: const Icon(CupertinoIcons.arrow_turn_up_right,
+                        color: Color(0xFF856DFF)),
+                  ),
+                ],
+              ))
+          : Container(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+              decoration: const BoxDecoration(
+                  color: Color(0xFFE6E6E6),
+                  boxShadow: [
+                    BoxShadow(
+                        blurRadius: 5,
+                        color: Colors.grey,
+                        offset: Offset(0, -2))
+                  ]),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    onPressed: _showCommandPalette,
+                    icon: const Icon(CupertinoIcons.line_horizontal_3,
+                        color: Color(0xFF856DFF)),
+                  ),
+                  IconButton(
+                    onPressed: _openFile,
+                    icon: const Icon(CupertinoIcons.folder,
+                        color: Color(0xFF856DFF)),
+                  ),
+                  IconButton(
+                    onPressed: _startRecord,
+                    icon: const Icon(CupertinoIcons.mic,
+                        color: Color(0xFF856DFF)),
+                  ),
+                  IconButton(
+                    onPressed: _newTab,
+                    icon: const Icon(CupertinoIcons.add,
+                        color: Color(0xFF856DFF)),
+                  )
+                ],
               ),
             ),
-          ),
-        ],
-      ),
-      // Bottom Navigation Bar
-      bottomNavigationBar: isFirstFieldFocused
-          ? BottomNavigationBar(
-              backgroundColor: const Color.fromARGB(255, 167, 89, 89),
-              selectedItemColor: const Color(0xFF856DFF),
-              unselectedItemColor: Colors.grey,
-              showSelectedLabels: false,
-              showUnselectedLabels: false,
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(CupertinoIcons.line_horizontal_3),
-                  label: 'Menu',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(CupertinoIcons.paperclip),
-                  label: 'Attach',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(CupertinoIcons.book),
-                  label: 'Book',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(CupertinoIcons.arrow_turn_up_left),
-                  label: 'Undo',
-                ),
-                BottomNavigationBarItem(
-                    icon: Icon(CupertinoIcons.arrow_turn_up_right),
-                    label: 'Redo'),
-              ],
-              onTap: (index) {
-                if (index == 2) {
-                  setState(() {
-                    markdownContent = firstController
-                        .text; // Save content from the first TextField
-                    isMarkdownRendered = true; // Render the markdown content
-                  });
-                }
-              },
-            )
-          : BottomNavigationBar(
-              backgroundColor: const Color.fromARGB(255, 167, 89, 89),
-              selectedItemColor: const Color(0xFF856DFF),
-              unselectedItemColor: Colors.grey,
-              showSelectedLabels: false,
-              showUnselectedLabels: false,
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(CupertinoIcons.line_horizontal_3),
-                  label: 'Home',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(CupertinoIcons.folder_open),
-                  label: 'Open',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(CupertinoIcons.mic),
-                  label: 'Record',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(CupertinoIcons.add),
-                  label: 'Add Tab',
-                ),
-              ],
-            ),
-    );
-  }
-}
-
-class NoteCard extends StatelessWidget {
-  final String placeholder;
-
-  const NoteCard({super.key, required this.placeholder});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.grey[200],
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Text(
-        placeholder,
-        style: const TextStyle(color: Colors.grey),
-      ),
     );
   }
 }
