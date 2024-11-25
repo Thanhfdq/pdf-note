@@ -34,10 +34,13 @@ class FileService {
   }
 
   void openFile(BuildContext context) async {
-    String content = await FileHelper.readFile("Untitle.md");
+    String filePath = await FileHelper.pickFile();
+    String content = await FileHelper.readFile(filePath);
     // ignore: use_build_context_synchronously
     final tabManager = Provider.of<TabsManager>(context, listen: false);
     tabManager.updateTab(tabManager.currentTab,
-        mode: "markdown", fileName: "Untitle.md", markdownContent: content);
+        mode: "markdown", fileName: filePath, markdownContent: content);
   }
+
+  void saveFile(String content) {}
 }

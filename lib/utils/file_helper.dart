@@ -1,29 +1,24 @@
 import 'dart:io';
-import 'package:path_provider/path_provider.dart';
+import 'package:file_picker/file_picker.dart';
 
 class FileHelper {
-  static Future<String> getFilePath(String fileName) async {
-    final directory = await getApplicationDocumentsDirectory();
-    return '${directory.path}/$fileName';
-  }
-
-  static Future<void> writeFile(String fileName, String content) async {
+  // Write to any specified path
+  static Future<void> writeFile(String filePath, String content) async {
     try {
-      final path = await getFilePath(fileName);
-      final file = File(path);
+      final file = File(filePath);
       await file.writeAsString(content);
-      print("File written: $path");
+      print("File written: $filePath");
     } catch (e) {
       print("Error writing file: $e");
     }
   }
 
-  static Future<String> readFile(String fileName) async {
+  // Read from any specified path
+  static Future<String> readFile(String filePath) async {
     try {
-      final path = await getFilePath(fileName);
-      print("Current path: ${path}");
-      final file = File(path);
+      final file = File(filePath);
       String content = await file.readAsString();
+      print("File read: $filePath");
       return content;
     } catch (e) {
       print("Error reading file: $e");
@@ -31,18 +26,32 @@ class FileHelper {
     }
   }
 
-  static Future<void> deleteFile(String fileName) async {
+  // Delete any file at a specified path
+  static Future<void> deleteFile(String filePath) async {
     try {
-      final path = await getFilePath(fileName);
-      final file = File(path);
+      final file = File(filePath);
       if (await file.exists()) {
         await file.delete();
-        print("File deleted: $path");
+        print("File deleted: $filePath");
       } else {
-        print("File does not exist");
+        print("File does not exist: $filePath");
       }
     } catch (e) {
       print("Error deleting file: $e");
     }
+  }
+
+  // Pick a file using File Picker
+  static Future<String> pickFile() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles();
+    if (result != null) {
+      String? filePath = result.files.single.path;
+      if (filePath != null) {
+        print("File selected: $filePath");
+        return filePath;
+      }
+    }
+    print("No file selected.");
+    return "";
   }
 }

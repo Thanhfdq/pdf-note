@@ -44,4 +44,9 @@ class TabsManager with ChangeNotifier {
     _tabs[index].markdownState?.toggleView();
     notifyListeners();
   }
+
+  void newMarkdownHistory(int index, String content) {
+    _tabs[index].markdownState?.newHistory(content);
+    notifyListeners();
+  }
 }

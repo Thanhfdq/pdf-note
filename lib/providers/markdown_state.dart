@@ -5,7 +5,7 @@ class MarkdownState extends ChangeNotifier {
 
   // MarkdownState({this.onNotifyParent});
   
-  bool previewMode = false;
+  bool previewMode = true;
   List<String> markDownHistory = [];
   String content = "";
 
