@@ -14,19 +14,17 @@ class MarkdownEditor extends StatefulWidget {
 }
 
 class _MarkdownEditorState extends State<MarkdownEditor> {
-  TabsManager tabsManager = TabsManager();
-
   @override
   Widget build(BuildContext context) {
     TabsManager tabManager = Provider.of<TabsManager>(context);
     final currentMarkdownState =
         tabManager.tabs[tabManager.currentTab].markdownState;
+    print("Build markdown editor: currenttab = ${tabManager.currentTab}");
     String content =
         tabManager.tabs[tabManager.currentTab].markdownState!.content;
     return Stack(
       children: [
-        MarkdownInput(
-            markdownText: content),
+        MarkdownInput(markdownText: content),
         currentMarkdownState?.previewMode == true
             ? Container(
                 color: Colors.white,

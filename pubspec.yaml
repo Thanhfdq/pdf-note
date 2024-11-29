@@ -39,6 +39,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   provider: ^6.1.2
   file_picker: ^8.1.4
+  flutter_zoom_drawer: ^3.2.0
+  path: ^1.9.0
 
 dev_dependencies:
   flutter_test:
@@ -92,3 +94,10 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+  fonts:
+    - family: SFPro
+      fonts:
+        - asset: assets/fonts/SFPro/SF-Pro-Display-Regular.otf
+        - asset: assets/fonts/SFPro/SF-Pro-Display-Bold.otf
+        - asset: assets/fonts/SFPro/SF-Pro-Display-RegularItalic.otf
+        - asset: assets/fonts/SFPro/SF-Pro-Display-BoldItalic.otf

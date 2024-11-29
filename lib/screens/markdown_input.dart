@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:pdf_note/services/file_services.dart';
 
 class MarkdownInput extends StatefulWidget {
   final String markdownText;
@@ -13,6 +16,7 @@ class MarkdownInput extends StatefulWidget {
 }
 
 class _MarkdownInputState extends State<MarkdownInput> {
+  Timer? _debounceTimer;
   late TextEditingController _controller = TextEditingController();
   @override
   void initState() {
@@ -27,26 +31,31 @@ class _MarkdownInputState extends State<MarkdownInput> {
   void dispose() {
     // Dispose of the controller to free resources
     _controller.dispose();
+    _debounceTimer?.cancel(); // Cancel the timer when the widget is disposed
     super.dispose();
+  }
+
+  void _onContentChanged(String value) {
+    // Restart the debounce timer
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(seconds: 1), () {
+      FileService().saveFile(context, _controller.text);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: TextField(
+    return TextField(
         controller: _controller,
         maxLines: null,
         expands: true,
         decoration: const InputDecoration(
             hintText: "Write your Markdown here...",
+            contentPadding:EdgeInsets.only(left: 30, top: 30),
             filled: true,
             fillColor: Colors.white,
+            hoverColor: Colors.white,
             border: InputBorder.none),
-        onChanged: (text) {
-          print("Current Markdown: $text"); // Example for debugging
-        },
-      ), // Trigger when text changes
-    );
+        onChanged: _onContentChanged); // Trigger when text chang
   }
 }

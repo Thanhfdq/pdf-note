@@ -21,7 +21,7 @@ class BottomToolbar extends StatelessWidget {
         CustomButton(icon: CupertinoIcons.line_horizontal_3, onPressed: () {}),
         CustomButton(
             icon: CupertinoIcons.folder_open,
-            onPressed: () => FileService().openFile(context)),
+            onPressed: () => FileService().openMarkdownFile(context)),
         CustomButton(icon: CupertinoIcons.mic, onPressed: () {}),
         CustomButton(icon: CupertinoIcons.add_circled, onPressed: () {}),
       ];
@@ -34,11 +34,14 @@ class BottomToolbar extends StatelessWidget {
                     true
                 ? CupertinoIcons.pen
                 : CupertinoIcons.book,
-            onPressed: () => MarkdownModeHandler.handleBook(context)),
+            onPressed: () => MarkdownModeHandler.handlePreview(context)),
         CustomButton(icon: CupertinoIcons.paperclip, onPressed: () {}),
-        CustomButton(icon: CupertinoIcons.arrow_turn_up_left, onPressed: () {}),
         CustomButton(
-            icon: CupertinoIcons.arrow_turn_up_right, onPressed: () {}),
+            icon: CupertinoIcons.arrow_turn_up_left,
+            onPressed: () => MarkdownModeHandler.handleUndo(context)),
+        CustomButton(
+            icon: CupertinoIcons.arrow_turn_up_right,
+            onPressed: () => MarkdownModeHandler.handleRedo(context)),
       ];
     } else if (tabManager.tabs[tabManager.currentTab].mode == "pdf") {
       toolbarButtons = [
@@ -53,7 +56,7 @@ class BottomToolbar extends StatelessWidget {
     }
 
     return BottomAppBar(
-      color: const Color(0xFFE6E6E6),
+      color: const Color.fromARGB(0, 230, 230, 230),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: toolbarButtons,

@@ -1,7 +1,18 @@
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
+import 'package:path/path.dart' as path_dependency;
+
+import 'package:pdf_note/constants/app_strings.dart';
 
 class FileHelper {
+  static String getPath(String fileName) {
+    return AppStrings.defaultFileLocation + fileName;
+  }
+
+  static String getFileName(String filePath) {
+    return path_dependency.basename(filePath);
+  }
+
   // Write to any specified path
   static Future<void> writeFile(String filePath, String content) async {
     try {
@@ -29,7 +40,7 @@ class FileHelper {
   // Delete any file at a specified path
   static Future<void> deleteFile(String filePath) async {
     try {
-      final file = File(filePath);
+      final file = File(getPath(filePath));
       if (await file.exists()) {
         await file.delete();
         print("File deleted: $filePath");

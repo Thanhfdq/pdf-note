@@ -1,12 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:pdf_note/providers/tab_mangager.dart';
 import 'package:pdf_note/screens/markdown_editor.dart';
+import 'package:pdf_note/widgets/file_options.dart';
+import 'package:pdf_note/widgets/left_drawer.dart';
 import 'package:provider/provider.dart';
 import '../widgets/app_bar.dart';
 import 'new_tab_screen.dart';
 import 'pdf_editor_screen.dart';
 import '../services/file_services.dart';
 import '../widgets/bottom_toolbar.dart';
+
+class Home extends StatefulWidget {
+  const Home({super.key});
+
+  @override
+  State<Home> createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
+  @override
+  Widget build(BuildContext context) {
+    return ZoomDrawer(
+      menuScreen: const LeftDrawer(),
+      mainScreen: HomeScreen(),
+      showShadow: true,
+      angle: 0.0,
+      borderRadius: 30,
+      menuBackgroundColor: Colors.grey,
+    );
+  }
+}
 
 class HomeScreen extends StatelessWidget {
   HomeScreen({super.key});
@@ -15,24 +39,27 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tabManager = context.watch<TabsManager>();
+    final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
     return Scaffold(
       backgroundColor: Colors.white,
+      key: scaffoldKey,
       appBar: CustomAppBar(
-          fileName: tabManager.tabs[tabManager.currentTab].fileName,
-          onTabButtonPressed: () {
-            //Logic to handle tab button press
-          },
-          onOptionsPressed: () {
-            //Logic to handle option button press
-          }),
+        fileName: tabManager.tabs[tabManager.currentTab].filePath,
+        scaffoldKey: scaffoldKey,
+      ),
       body: Consumer<TabsManager>(builder: (context, tabManager, child) {
-        return tabManager.tabs[tabManager.currentTab].mode == "markdown"
-            ? const MarkdownEditor()
-            : tabManager.tabs[tabManager.currentTab].mode == "pdf"
-                ? const PDFEditorScreen()
-                : NewTabScreen(fileService: fileService);
+        return Stack(
+          children: [
+            tabManager.tabs[tabManager.currentTab].mode == "markdown"
+                ? const MarkdownEditor()
+                : tabManager.tabs[tabManager.currentTab].mode == "pdf"
+                    ? const PDFEditorScreen()
+                    : NewTabScreen(fileService: fileService),
+            if (tabManager.isOptionsOpen) const FileOptions()
+          ],
+        );
       }),
-      // drawer: LeftDrawer(),
+      drawer: const LeftDrawer(),
       // endDrawer: RightDrawer(),
       bottomNavigationBar: const BottomToolbar(),
     );

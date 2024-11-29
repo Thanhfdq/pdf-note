@@ -3,16 +3,14 @@ import 'package:pdf_note/providers/markdown_state.dart';
 
 class TabState extends ChangeNotifier {
   String mode = "new";
-  String fileName = "";
+  String filePath = "";
   MarkdownState? markdownState;
 
-  TabState({required this.mode, required this.fileName});
-
-  
+  TabState({required this.mode, required this.filePath});
 
   TabState.withMarkdown(
       {required this.mode,
-      required this.fileName,
+      required this.filePath,
       required this.markdownState});
 
   void setMode(String mode) {
@@ -21,7 +19,11 @@ class TabState extends ChangeNotifier {
   }
 
   void setFileName(String fileName) {
-    this.fileName = fileName;
+    this.filePath = fileName;
     notifyListeners();
+  }
+
+  void setMarkdownState(MarkdownState markdownState) {
+    this.markdownState = markdownState;
   }
 }
