@@ -1,7 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:pdf_note/providers/tab_mangager.dart';
 import 'package:pdf_note/services/file_services.dart';
+import 'package:pdf_note/utils/file_helper.dart';
+import 'package:provider/provider.dart';
 
 class MarkdownInput extends StatefulWidget {
   final String markdownText;
@@ -17,13 +20,29 @@ class MarkdownInput extends StatefulWidget {
 
 class _MarkdownInputState extends State<MarkdownInput> {
   Timer? _debounceTimer;
-  late TextEditingController _controller = TextEditingController();
+  final TextEditingController _controller = TextEditingController();
+  final TextEditingController _titleController = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
+  
   @override
   void initState() {
     super.initState();
     // Initialize controller with the markdownText
     setState(() {
-      _controller = TextEditingController(text: widget.markdownText);
+      _controller.text = widget.markdownText;
+    });
+
+    _focusNode.addListener(() {
+      if (!_focusNode.hasFocus) {
+        print("lost focus");
+        final tabsManager = Provider.of<TabsManager>(context, listen: false);
+        FileService().renameFile(
+          context,
+          tabsManager.currentTab,
+          tabsManager.tabs[tabsManager.currentTab].filePath,
+          _titleController.text,
+        );
+      }
     });
   }
 
@@ -31,6 +50,7 @@ class _MarkdownInputState extends State<MarkdownInput> {
   void dispose() {
     // Dispose of the controller to free resources
     _controller.dispose();
+    _focusNode.dispose();
     _debounceTimer?.cancel(); // Cancel the timer when the widget is disposed
     super.dispose();
   }
@@ -45,17 +65,41 @@ class _MarkdownInputState extends State<MarkdownInput> {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-        controller: _controller,
-        maxLines: null,
-        expands: true,
-        decoration: const InputDecoration(
-            hintText: "Write your Markdown here...",
-            contentPadding:EdgeInsets.only(left: 30, top: 30),
-            filled: true,
-            fillColor: Colors.white,
-            hoverColor: Colors.white,
-            border: InputBorder.none),
-        onChanged: _onContentChanged); // Trigger when text chang
+    final tabsManager = Provider.of<TabsManager>(context);
+    // Set the text in the TextEditingController
+    _titleController.text = FileHelper.getFileName(
+        tabsManager.tabs[tabsManager.currentTab].filePath);
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextField(
+            controller: _titleController,
+            focusNode: _focusNode,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+            decoration: const InputDecoration(
+              hintText: 'Nhập tiêu đề...',
+              border: InputBorder.none,
+            ),
+          ),
+          const SizedBox(height: 16), // Khoảng cách giữa tiêu đề và nội dung
+          TextField(
+            controller: _controller,
+            maxLines: null, // Cho phép tự động mở rộng chiều cao theo nội dung
+            decoration: const InputDecoration(
+              hintText: "Write your Markdown here...",
+              filled: true,
+              fillColor: Colors.white,
+              border: InputBorder.none,
+            ),
+            onChanged: _onContentChanged,
+          ),
+        ],
+      ),
+    );
   }
 }

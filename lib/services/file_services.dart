@@ -10,7 +10,8 @@ import '../utils/notification_helper.dart';
 class FileService {
   void createNewMarkdownFile(BuildContext context) {
     try {
-      String filePath = AppStrings.defaultFileLocation + generateFileName();
+      String filePath =
+          "${AppStrings.defaultFileLocation}${generateFileName()}.md";
       FileHelper.writeFile(AppStrings.defaultFileLocation + filePath, "");
       final tabManager = Provider.of<TabsManager>(context, listen: false);
       tabManager.updateTab(tabManager.currentTab,
@@ -30,7 +31,7 @@ class FileService {
   String generateFileName() {
 // Generate a unique file name (e.g., "note_YYYYMMDD_HHMMSS.md")
     final now = DateTime.now();
-    return "note_${now.toIso8601String().replaceAll(':', '_')}.md";
+    return "note_${now.toIso8601String().replaceAll(':', '_')}";
   }
 
   void createNewPdfFile(BuildContext context) {
@@ -67,6 +68,25 @@ class FileService {
     tabsManager.tabs[tabsManager.currentTab].markdownState?.printState();
   }
 
+  void renameFile(
+      BuildContext context, int tabIndex, String filePath, String newName) {
+    final tabsManager = Provider.of<TabsManager>(context, listen: false);
+
+    int lastSlashIndex = filePath.lastIndexOf('/');
+    String directory =
+        filePath.substring(0, lastSlashIndex + 1); // Extract the directory
+
+    // Get file type
+    String fileType =
+        filePath.substring(filePath.lastIndexOf('.'), filePath.length);
+    // Combine directory and new file name
+    String newPath = '$directory$newName$fileType';
+    print("New file Path: $newPath");
+    FileHelper.renameFile(filePath, newPath);
+    // Update to app state
+    tabsManager.updateTab(tabIndex, newFilePath: newPath);
+  }
+
   void closeTab(BuildContext context, int index) {
     final tabsManager = Provider.of<TabsManager>(context, listen: false);
     tabsManager.removeTab(index);
@@ -80,8 +100,8 @@ class FileService {
     }
     tabsManager.updateTab(--tabsManager.currentTab); // Update current tab
   }
-  
-  void closeAllTab(BuildContext context){
+
+  void closeAllTab(BuildContext context) {
     print("closing all tab...");
     final tabsManager = Provider.of<TabsManager>(context, listen: false);
     tabsManager.removeAllTab();

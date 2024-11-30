@@ -18,8 +18,8 @@ class TabState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setFileName(String fileName) {
-    filePath = fileName;
+  void setFilePath(String filePath) {
+    this.filePath = filePath;
     notifyListeners();
   }
 

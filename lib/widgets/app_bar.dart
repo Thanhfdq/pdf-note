@@ -7,11 +7,11 @@ import 'package:pdf_note/services/newtab_mode_handler.dart';
 import 'package:provider/provider.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final String fileName;
+  final String filePath;
   final GlobalKey<ScaffoldState> scaffoldKey;
 
   const CustomAppBar(
-      {super.key, required this.fileName, required this.scaffoldKey});
+      {super.key, required this.filePath, required this.scaffoldKey});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +27,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         icon: CupertinoIcons.rectangle_stack,
       ),
       title: Text(
-        fileName.isEmpty ? "New Tab" : fileName,
+        filePath.isEmpty ? "New Tab" : filePath,
         style: const TextStyle(color: Colors.grey, fontSize: 15),
       ),
       centerTitle: true,

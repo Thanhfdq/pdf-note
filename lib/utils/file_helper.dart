@@ -10,7 +10,10 @@ class FileHelper {
   }
 
   static String getFileName(String filePath) {
-    return path_dependency.basename(filePath);
+    String nameWithextension = path_dependency.basename(filePath);
+    String justName =
+        nameWithextension.substring(0, nameWithextension.lastIndexOf('.'));
+    return justName;
   }
 
   // Write to any specified path
@@ -49,6 +52,20 @@ class FileHelper {
       }
     } catch (e) {
       print("Error deleting file: $e");
+    }
+  }
+
+  static void renameFile(String oldPath, String newPath) async {
+    try {
+      // Create a File instance
+      final file = File(oldPath);
+
+      // Rename the file
+      final renamedFile = await file.rename(newPath);
+
+      print('File renamed successfully to: ${renamedFile.path}');
+    } catch (e) {
+      print('Error renaming file: $e');
     }
   }
 

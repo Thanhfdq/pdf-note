@@ -27,27 +27,26 @@ class TabsManager with ChangeNotifier {
   }
 
   void removeTab(int index) {
-    print("removing...");
     _tabs.removeAt(index);
     notifyListeners();
   }
 
-  void removeAllTab(){
+  void removeAllTab() {
     _tabs.clear();
     notifyListeners();
   }
 
-  void updateTab(int newIndex,
+  void updateTab(int index,
       {String? newMode,
       String? newFilePath,
       MarkdownState? newMarkDownState,
       String? newMarkdownContent}) {
-    if (newIndex < 0 || newIndex >= _tabs.length) return;
-    if (newMode != null) _tabs[newIndex].setMode(newMode);
-    if (newFilePath != null) _tabs[newIndex].setFileName(newFilePath);
-    if (newMarkDownState != null) _tabs[newIndex].setMarkdownState(newMarkDownState);
+    if (index < 0 || index >= _tabs.length) return;
+    if (newMode != null) _tabs[index].setMode(newMode);
+    if (newFilePath != null) _tabs[index].setFilePath(newFilePath);
+    if (newMarkDownState != null) _tabs[index].setMarkdownState(newMarkDownState);
     if (newMarkdownContent != null) {
-      _tabs[newIndex].markdownState?.setContent(newMarkdownContent);
+      _tabs[index].markdownState?.setContent(newMarkdownContent);
     }
     notifyListeners();
   }
@@ -71,7 +70,6 @@ class TabsManager with ChangeNotifier {
 
   void toggleOption() {
     _isOptionsOpen = !_isOptionsOpen;
-    print("Change option status $_isOptionsOpen");
     notifyListeners();
   }
 }

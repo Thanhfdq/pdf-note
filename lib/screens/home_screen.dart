@@ -47,7 +47,7 @@ class HomeScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       key: scaffoldKey,
       appBar: CustomAppBar(
-        fileName: tabManager.tabs[tabManager.currentTab].filePath,
+        filePath: tabManager.tabs[tabManager.currentTab].filePath,
         scaffoldKey: scaffoldKey,
       ),
       body: Consumer<TabsManager>(builder: (context, tabManager, child) {
