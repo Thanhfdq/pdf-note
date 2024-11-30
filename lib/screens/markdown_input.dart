@@ -94,6 +94,7 @@ class _MarkdownInputState extends State<MarkdownInput> {
               hintText: "Write your Markdown here...",
               filled: true,
               fillColor: Colors.white,
+              hoverColor: Colors.white,
               border: InputBorder.none,
             ),
             onChanged: _onContentChanged,

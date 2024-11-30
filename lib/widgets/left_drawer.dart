@@ -29,12 +29,12 @@ class _LeftDrawerState extends State<LeftDrawer> {
               children: [
                 Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                          "${tabsManager.tabs.length} tabs"),
-                    )),
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      "${tabsManager.tabs.length} tabs"),
+                )),
               ],
             ),
             Expanded(
@@ -54,7 +54,8 @@ class _LeftDrawerState extends State<LeftDrawer> {
                       ZoomDrawer.of(context)!.close(); // Close the drawer
                     },
                     child: Padding(
-                      padding: const EdgeInsets.only(bottom: 7, left: 10, right: 10),
+                      padding:
+                          const EdgeInsets.only(bottom: 7, left: 10, right: 10),
                       child: Card(
                         color: tabsManager.currentTab == index
                             ? Colors.white
@@ -119,7 +120,6 @@ class _LeftDrawerState extends State<LeftDrawer> {
                                             color: Colors.grey,
                                           ),
                                           textAlign: TextAlign.left,
-                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
                                     ),

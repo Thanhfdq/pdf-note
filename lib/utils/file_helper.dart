@@ -10,6 +10,7 @@ class FileHelper {
   }
 
   static String getFileName(String filePath) {
+    if(filePath.isEmpty) return "";
     String nameWithextension = path_dependency.basename(filePath);
     String justName =
         nameWithextension.substring(0, nameWithextension.lastIndexOf('.'));
