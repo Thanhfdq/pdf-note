@@ -12,13 +12,12 @@ class FileService {
     try {
       String filePath = AppStrings.defaultFileLocation + generateFileName();
       FileHelper.writeFile(AppStrings.defaultFileLocation + filePath, "");
-      print("Create new file with path: ${filePath}");
       final tabManager = Provider.of<TabsManager>(context, listen: false);
       tabManager.updateTab(tabManager.currentTab,
-          mode: "markdown",
-          filePath: filePath,
-          markdownState: MarkdownState(),
-          markdownContent: "");
+          newMode: "markdown",
+          newFilePath: filePath,
+          newMarkDownState: MarkdownState(),
+          newMarkdownContent: "");
       // Notify the user or navigate to the editor screen
       NotificationHelper.showNotification(
           context, "Created new markdown file.");
@@ -33,8 +32,6 @@ class FileService {
     final now = DateTime.now();
     return "note_${now.toIso8601String().replaceAll(':', '_')}.md";
   }
-
-
 
   void createNewPdfFile(BuildContext context) {
     // Your logic for creating a new PDF file
@@ -52,10 +49,10 @@ class FileService {
     final tabManager = Provider.of<TabsManager>(context, listen: false);
     // Set markdown mode for tabcx
     tabManager.updateTab(tabManager.currentTab,
-        mode: "markdown",
-        filePath: filePath,
-        markdownState: MarkdownState(),
-        markdownContent: content);
+        newMode: "markdown",
+        newFilePath: filePath,
+        newMarkDownState: MarkdownState(),
+        newMarkdownContent: content);
   }
 
   void saveFile(BuildContext context, String content) {
@@ -65,10 +62,31 @@ class FileService {
     String filePath = tabsManager.tabs[tabsManager.currentTab].filePath;
     // Save file and save history
     FileHelper.writeFile(filePath, content);
-    print("Before save history");
     tabsManager.tabs[tabsManager.currentTab].markdownState
         ?.saveVersion(content);
     tabsManager.tabs[tabsManager.currentTab].markdownState?.printState();
-    print("After save history");
+  }
+
+  void closeTab(BuildContext context, int index) {
+    final tabsManager = Provider.of<TabsManager>(context, listen: false);
+    tabsManager.removeTab(index);
+    if (index == 0 && tabsManager.tabs.isEmpty) {
+      tabsManager.addTab("new", "");
+      tabsManager.updateTab(0);
+    }
+    if (index > tabsManager.currentTab ||
+        (index == tabsManager.currentTab && index == 0)) {
+      return; // Dont need to update current tab index in these case
+    }
+    tabsManager.updateTab(--tabsManager.currentTab); // Update current tab
+  }
+  
+  void closeAllTab(BuildContext context){
+    print("closing all tab...");
+    final tabsManager = Provider.of<TabsManager>(context, listen: false);
+    tabsManager.removeAllTab();
+    print("...done.");
+    tabsManager.addTab("new", "");
+    tabsManager.setCurrentTab(0);
   }
 }

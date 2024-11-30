@@ -18,7 +18,7 @@ class MarkdownModeHandler {
     tabsManager.tabs[TabsManager().currentTab].markdownState?.printState();
     // Update content undo current editing
     tabsManager.updateTab(tabsManager.currentTab,
-        markdownContent:
+        newMarkdownContent:
             tabsManager.tabs[tabsManager.currentTab].markdownState?.content);
     isSuccess
         ? ""
@@ -34,7 +34,7 @@ class MarkdownModeHandler {
     tabsManager.tabs[tabsManager.currentTab].markdownState?.printState();
     // Update content undo current editing
     tabsManager.updateTab(tabsManager.currentTab,
-        markdownContent:
+        newMarkdownContent:
             tabsManager.tabs[tabsManager.currentTab].markdownState?.content);
     isSuccess
         ? ""

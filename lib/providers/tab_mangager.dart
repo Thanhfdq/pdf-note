@@ -18,30 +18,36 @@ class TabsManager with ChangeNotifier {
     notifyListeners();
   }
 
-  void addTab(String mode, String fileName) {
+  void addTab(String mode, String filePath) {
     _tabs.add(TabState(
       mode: mode,
-      filePath: fileName,
+      filePath: filePath,
     ));
     notifyListeners();
   }
 
   void removeTab(int index) {
+    print("removing...");
     _tabs.removeAt(index);
     notifyListeners();
   }
 
-  void updateTab(int index,
-      {String? mode,
-      String? filePath,
-      MarkdownState? markdownState,
-      String? markdownContent}) {
-    if (index < 0 || index >= _tabs.length) return;
-    if (mode != null) _tabs[index].setMode(mode);
-    if (filePath != null) _tabs[index].setFileName(filePath);
-    if (markdownState != null) _tabs[index].setMarkdownState(markdownState);
-    if (markdownContent != null) {
-      _tabs[index].markdownState?.setContent(markdownContent);
+  void removeAllTab(){
+    _tabs.clear();
+    notifyListeners();
+  }
+
+  void updateTab(int newIndex,
+      {String? newMode,
+      String? newFilePath,
+      MarkdownState? newMarkDownState,
+      String? newMarkdownContent}) {
+    if (newIndex < 0 || newIndex >= _tabs.length) return;
+    if (newMode != null) _tabs[newIndex].setMode(newMode);
+    if (newFilePath != null) _tabs[newIndex].setFileName(newFilePath);
+    if (newMarkDownState != null) _tabs[newIndex].setMarkdownState(newMarkDownState);
+    if (newMarkdownContent != null) {
+      _tabs[newIndex].markdownState?.setContent(newMarkdownContent);
     }
     notifyListeners();
   }

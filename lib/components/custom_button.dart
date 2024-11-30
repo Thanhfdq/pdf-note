@@ -10,7 +10,7 @@ class CustomButton extends StatelessWidget {
     super.key,
     required this.onPressed,
     required this.icon,
-    this.backgroundColor = const Color.fromARGB(0, 255, 255, 255),
+    this.backgroundColor = const Color.fromARGB(255, 255, 255, 255),
     this.textColor = const Color(0xFF856DFF),
   });
 
@@ -19,6 +19,7 @@ class CustomButton extends StatelessWidget {
     return IconButton(
       onPressed: onPressed,
       icon: icon != null ? Icon(icon, color: textColor) : Container(),
+      color: backgroundColor,
     );
   }
 }

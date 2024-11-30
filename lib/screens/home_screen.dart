@@ -24,9 +24,12 @@ class _HomeState extends State<Home> {
     return ZoomDrawer(
       menuScreen: const LeftDrawer(),
       mainScreen: HomeScreen(),
-      showShadow: true,
+      mainScreenScale: 0.0,
+      menuScreenWidth: 270,
       angle: 0.0,
-      borderRadius: 30,
+      borderRadius: 0,
+      dragOffset: double.infinity,
+      mainScreenTapClose: true,
       menuBackgroundColor: Colors.grey,
     );
   }
