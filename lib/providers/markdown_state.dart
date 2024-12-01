@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 
 class MarkdownState extends ChangeNotifier {
   bool previewMode = false;
-  // List<String> markDownHistory = [];
   String content = "";
   final List<String> _undoStack = []; // Undo history
   final List<String> _redoStack = []; // Redo history
@@ -11,7 +10,6 @@ class MarkdownState extends ChangeNotifier {
   void setPreviewMode(bool previewMode) {
     this.previewMode = previewMode;
     notifyListeners();
-    // onNotifyParent?.call(); // Notify the parent (TabsManager)
   }
 
   void toggleView() {

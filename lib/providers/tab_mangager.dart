@@ -1,15 +1,16 @@
 import 'package:flutter/foundation.dart';
 import 'package:pdf_note/providers/markdown_state.dart';
+import 'package:pdf_note/providers/pdf_state.dart';
 import 'tab_state.dart'; // Assuming the TabState is in a separate file
 
 class TabsManager with ChangeNotifier {
   final List<TabState> _tabs = [
-    TabState.withMarkdown(
-        mode: "new", filePath: "", markdownState: MarkdownState())
+    TabState(mode: "new", filePath: ""),
+    TabState.withPdf(mode: "pdf", filePath: "", pdfState: PdfState())
   ];
 
   List<TabState> get tabs => List.unmodifiable(_tabs);
-  int currentTab = 0;
+  int currentTab = 1;
   bool _isOptionsOpen = false;
   bool get isOptionsOpen => _isOptionsOpen;
 
@@ -44,7 +45,8 @@ class TabsManager with ChangeNotifier {
     if (index < 0 || index >= _tabs.length) return;
     if (newMode != null) _tabs[index].setMode(newMode);
     if (newFilePath != null) _tabs[index].setFilePath(newFilePath);
-    if (newMarkDownState != null) _tabs[index].setMarkdownState(newMarkDownState);
+    if (newMarkDownState != null)
+      _tabs[index].setMarkdownState(newMarkDownState);
     if (newMarkdownContent != null) {
       _tabs[index].markdownState?.setContent(newMarkdownContent);
     }

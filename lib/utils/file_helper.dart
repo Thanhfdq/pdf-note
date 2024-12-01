@@ -10,7 +10,7 @@ class FileHelper {
   }
 
   static String getFileName(String filePath) {
-    if(filePath.isEmpty) return "";
+    if (filePath.isEmpty) return "";
     String nameWithextension = path_dependency.basename(filePath);
     String justName =
         nameWithextension.substring(0, nameWithextension.lastIndexOf('.'));
@@ -71,8 +71,9 @@ class FileHelper {
   }
 
   // Pick a file using File Picker
-  static Future<String> pickFile() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
+  static Future<String> pickFile(List<String> allowedExtensions) async {
+    FilePickerResult? result = await FilePicker.platform
+        .pickFiles(type: FileType.custom, allowedExtensions: allowedExtensions);
     if (result != null) {
       String? filePath = result.files.single.path;
       if (filePath != null) {

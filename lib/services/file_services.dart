@@ -44,7 +44,8 @@ class FileService {
   }
 
   void openMarkdownFile(BuildContext context) async {
-    String filePath = await FileHelper.pickFile();
+    String filePath = await FileHelper.pickFile(['md','pdf']);
+    if (filePath.isEmpty) return; // cancel if user not choose any file
     String content = await FileHelper.readFile(filePath);
     // ignore: use_build_context_synchronously
     final tabManager = Provider.of<TabsManager>(context, listen: false);

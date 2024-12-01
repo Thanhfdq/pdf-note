@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:pdf_note/providers/tab_mangager.dart';
 import 'package:pdf_note/screens/markdown_editor.dart';
+import 'package:pdf_note/screens/pdf_viewer_screen.dart';
 import 'package:pdf_note/widgets/file_options.dart';
 import 'package:pdf_note/widgets/left_drawer.dart';
 import 'package:provider/provider.dart';
 import '../widgets/app_bar.dart';
 import 'new_tab_screen.dart';
-import 'pdf_editor_screen.dart';
 import '../services/file_services.dart';
 import '../widgets/bottom_toolbar.dart';
 
@@ -28,7 +28,7 @@ class _HomeState extends State<Home> {
       menuScreenWidth: 270,
       angle: 0.0,
       borderRadius: 0,
-      dragOffset: double.infinity,
+      // dragOffset: double.infinity,
       mainScreenTapClose: true,
       menuBackgroundColor: Colors.grey,
     );
@@ -56,7 +56,7 @@ class HomeScreen extends StatelessWidget {
             tabManager.tabs[tabManager.currentTab].mode == "markdown"
                 ? const MarkdownEditor()
                 : tabManager.tabs[tabManager.currentTab].mode == "pdf"
-                    ? const PDFEditorScreen()
+                    ? const PdfViewerScreen()
                     : NewTabScreen(fileService: fileService),
             if (tabManager.isOptionsOpen) const FileOptions()
           ],

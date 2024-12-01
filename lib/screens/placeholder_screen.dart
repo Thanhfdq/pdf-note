@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pdf_note/screens/pdf_viewer_screen.dart';
 
 class PlaceholderScreen extends StatelessWidget {
   final String title;
@@ -8,13 +9,6 @@ class PlaceholderScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: Center(
-        child: Text(
-          "This is the $title screen.",
-          style: const TextStyle(fontSize: 18),
-        ),
-      ),
-    );
+        appBar: AppBar(title: Text(title)), body: const PdfViewerScreen());
   }
 }
