@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 class PdfState extends ChangeNotifier {
   int _currentPage = 1; // Track the current page
   int _totalPages = 0; // Track total pages
-  bool _isViewMode = true;
+  bool _isViewMode = false;
 
   int get currentPage => _currentPage;
   int get totalPages => _totalPages;

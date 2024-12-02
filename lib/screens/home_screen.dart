@@ -3,6 +3,7 @@ import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:pdf_note/constants/app_strings.dart';
 import 'package:pdf_note/providers/tab_mangager.dart';
 import 'package:pdf_note/screens/markdown_editor.dart';
+import 'package:pdf_note/screens/pdf_editor_screen.dart';
 import 'package:pdf_note/screens/pdf_viewer_screen.dart';
 import 'package:pdf_note/widgets/file_options.dart';
 import 'package:pdf_note/widgets/left_drawer.dart';
@@ -55,21 +56,24 @@ class HomeScreen extends StatelessWidget {
         body: Consumer<TabsManager>(builder: (context, tabManager, child) {
           return Stack(
             children: [
-              currentTab.mode == AppStrings.markdownMode
+              currentTab.mode == AppStrings.markdownMode // Markdown mode
                   ? const MarkdownEditor()
-                  : currentTab.mode == AppStrings.pdfMode
-                      ? const PdfViewerScreen()
-                      : NewTabScreen(fileService: fileService),
+                  : currentTab.mode == AppStrings.pdfMode // PDF mode
+                      ? tabsManager
+                              .tabs[tabsManager.currentTab].pdfState!.isViewMode
+                          ? const PdfViewerScreen()
+                          : const PdfEditorScreen()
+                      : NewTabScreen(fileService: fileService), // New Tab
               if (tabManager.isOptionsOpen) const FileOptions()
             ],
           );
         }),
-        drawer: const LeftDrawer(),
-        // endDrawer: RightDrawer(),
-        bottomNavigationBar: currentTab.mode == AppStrings.pdfMode
-            ? currentTab.pdfState!.isViewMode
-                ? null
-                : const BottomToolbar()
-            : const BottomToolbar());
+        drawer: const LeftDrawer());
+    // endDrawer: RightDrawer(),
+    // bottomNavigationBar: currentTab.mode == AppStrings.pdfMode
+    //     ? currentTab.pdfState!.isViewMode
+    //         ? null
+    //         : const BottomToolbar()
+    //     : const BottomToolbar());
   }
 }

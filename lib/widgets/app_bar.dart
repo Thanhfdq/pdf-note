@@ -3,7 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:pdf_note/components/custom_button.dart';
 import 'package:pdf_note/providers/tab_mangager.dart';
-import 'package:pdf_note/services/newtab_mode_handler.dart';
 import 'package:provider/provider.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -32,11 +31,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       centerTitle: true,
       actions: [
-        // CustomButton(
-        //     onPressed: () {
-        //       NewtabModeHandler.handleNewTabButton(context);
-        //     },
-        //     icon: CupertinoIcons.add),
         CustomButton(
           onPressed: tabsManager.toggleOption,
           icon: CupertinoIcons.ellipsis_vertical,

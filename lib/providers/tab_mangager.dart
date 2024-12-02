@@ -6,7 +6,9 @@ import 'tab_state.dart'; // Assuming the TabState is in a separate file
 
 class TabsManager with ChangeNotifier {
   final List<TabState> _tabs = [
-    TabState(mode: AppStrings.newTabMode, filePath: "")
+    // TabState(mode: AppStrings.newTabMode, filePath: "")
+    TabState.withPdf(
+        mode: AppStrings.pdfMode, filePath: "", pdfState: PdfState())
   ];
 
   List<TabState> get tabs => List.unmodifiable(_tabs);
