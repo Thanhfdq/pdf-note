@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
+import 'package:pdf_note/constants/app_strings.dart';
 import 'package:pdf_note/providers/tab_mangager.dart';
 import 'package:pdf_note/screens/markdown_editor.dart';
 import 'package:pdf_note/screens/pdf_viewer_screen.dart';
@@ -41,30 +42,34 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tabManager = context.watch<TabsManager>();
+    final tabsManager = context.watch<TabsManager>();
+    final currentTab = tabsManager.tabs[tabsManager.currentTab];
     final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
     return Scaffold(
-      backgroundColor: Colors.white,
-      key: scaffoldKey,
-      appBar: CustomAppBar(
-        filePath: tabManager.tabs[tabManager.currentTab].filePath,
-        scaffoldKey: scaffoldKey,
-      ),
-      body: Consumer<TabsManager>(builder: (context, tabManager, child) {
-        return Stack(
-          children: [
-            tabManager.tabs[tabManager.currentTab].mode == "markdown"
-                ? const MarkdownEditor()
-                : tabManager.tabs[tabManager.currentTab].mode == "pdf"
-                    ? const PdfViewerScreen()
-                    : NewTabScreen(fileService: fileService),
-            if (tabManager.isOptionsOpen) const FileOptions()
-          ],
-        );
-      }),
-      drawer: const LeftDrawer(),
-      // endDrawer: RightDrawer(),
-      bottomNavigationBar: const BottomToolbar(),
-    );
+        backgroundColor: Colors.white,
+        key: scaffoldKey,
+        appBar: CustomAppBar(
+          filePath: currentTab.filePath,
+          scaffoldKey: scaffoldKey,
+        ),
+        body: Consumer<TabsManager>(builder: (context, tabManager, child) {
+          return Stack(
+            children: [
+              currentTab.mode == AppStrings.markdownMode
+                  ? const MarkdownEditor()
+                  : currentTab.mode == AppStrings.pdfMode
+                      ? const PdfViewerScreen()
+                      : NewTabScreen(fileService: fileService),
+              if (tabManager.isOptionsOpen) const FileOptions()
+            ],
+          );
+        }),
+        drawer: const LeftDrawer(),
+        // endDrawer: RightDrawer(),
+        bottomNavigationBar: currentTab.mode == AppStrings.pdfMode
+            ? currentTab.pdfState!.isViewMode
+                ? null
+                : const BottomToolbar()
+            : const BottomToolbar());
   }
 }

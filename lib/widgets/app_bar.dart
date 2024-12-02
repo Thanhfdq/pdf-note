@@ -32,11 +32,11 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       centerTitle: true,
       actions: [
-        CustomButton(
-            onPressed: () {
-              NewtabModeHandler.handleNewTabButton(context);
-            },
-            icon: CupertinoIcons.add),
+        // CustomButton(
+        //     onPressed: () {
+        //       NewtabModeHandler.handleNewTabButton(context);
+        //     },
+        //     icon: CupertinoIcons.add),
         CustomButton(
           onPressed: tabsManager.toggleOption,
           icon: CupertinoIcons.ellipsis_vertical,

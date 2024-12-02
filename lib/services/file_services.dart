@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pdf_note/constants/app_strings.dart';
 import 'package:pdf_note/providers/markdown_state.dart';
+import 'package:pdf_note/providers/pdf_state.dart';
 import 'package:pdf_note/providers/tab_mangager.dart';
 import 'package:pdf_note/utils/file_helper.dart';
 import 'package:provider/provider.dart';
@@ -15,7 +16,7 @@ class FileService {
       FileHelper.writeFile(AppStrings.defaultFileLocation + filePath, "");
       final tabManager = Provider.of<TabsManager>(context, listen: false);
       tabManager.updateTab(tabManager.currentTab,
-          newMode: "markdown",
+          newMode: AppStrings.markdownMode,
           newFilePath: filePath,
           newMarkDownState: MarkdownState(),
           newMarkdownContent: "");
@@ -44,17 +45,25 @@ class FileService {
   }
 
   void openMarkdownFile(BuildContext context) async {
-    String filePath = await FileHelper.pickFile(['md','pdf']);
+    String filePath = await FileHelper.pickFile(['md', 'pdf']);
     if (filePath.isEmpty) return; // cancel if user not choose any file
     String content = await FileHelper.readFile(filePath);
     // ignore: use_build_context_synchronously
-    final tabManager = Provider.of<TabsManager>(context, listen: false);
-    // Set markdown mode for tabcx
-    tabManager.updateTab(tabManager.currentTab,
-        newMode: "markdown",
-        newFilePath: filePath,
-        newMarkDownState: MarkdownState(),
-        newMarkdownContent: content);
+    final tabsManager = Provider.of<TabsManager>(context, listen: false);
+    if (filePath.substring(filePath.lastIndexOf('.') + 1, filePath.length) ==
+        'md') {
+      // Set markdown mode for tab
+      tabsManager.updateTab(tabsManager.currentTab,
+          newMode: AppStrings.markdownMode,
+          newFilePath: filePath,
+          newMarkDownState: MarkdownState(),
+          newMarkdownContent: content);
+    } else {
+      tabsManager.updateTab(tabsManager.currentTab,
+          newMode: AppStrings.pdfMode,
+          newFilePath: filePath,
+          newPdfState: PdfState());
+    }
   }
 
   void saveFile(BuildContext context, String content) {
