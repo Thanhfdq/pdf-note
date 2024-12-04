@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:pdf/pdf.dart';
 import 'package:pdf_note/constants/app_strings.dart';
+import 'package:pdf_note/models/canvas_element.dart';
 import 'package:pdf_note/providers/markdown_state.dart';
 import 'package:pdf_note/providers/pdf_state.dart';
 import 'package:pdf_note/providers/tab_mangager.dart';
 import 'package:pdf_note/utils/file_helper.dart';
 import 'package:provider/provider.dart';
-import '../screens/placeholder_screen.dart';
 import '../utils/notification_helper.dart';
+import 'package:pdf/widgets.dart' as pw;
 
 class FileService {
   void createNewMarkdownFile(BuildContext context) {
+    final tabManager = Provider.of<TabsManager>(context, listen: false);
+    String defaultFileLocation = tabManager.defaultFileLocation;
     try {
-      String filePath =
-          "${AppStrings.defaultFileLocation}${generateFileName()}.md";
-      FileHelper.writeFile(AppStrings.defaultFileLocation + filePath, "");
+      String filePath = "$defaultFileLocation${generateFileName()}.md";
+      FileHelper.writeFile(filePath, "");
       final tabManager = Provider.of<TabsManager>(context, listen: false);
       tabManager.updateTab(tabManager.currentTab,
           newMode: AppStrings.markdownMode,
@@ -38,10 +42,17 @@ class FileService {
   void createNewPdfFile(BuildContext context) {
     // Your logic for creating a new PDF file
     // Example: Navigate to PDF editor or initialize resources
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const PlaceholderScreen("PDF Editor")),
-    );
+    // Navigator.push(
+    //   context,
+    //   MaterialPageRoute(builder: (_) => const PlaceholderScreen("PDF Editor")),);
+    final tabManager = Provider.of<TabsManager>(context, listen: false);
+    tabManager.updateTab(tabManager.currentTab,
+        newMode: AppStrings.pdfMode,
+        newFilePath:
+            "${tabManager.defaultFileLocation}${generateFileName()}.pdf",
+        newPdfState: PdfState());
+    // Notify the user or navigate to the editor screen
+    NotificationHelper.showNotification(context, "Created new pdf file.");
   }
 
   void openMarkdownFile(BuildContext context) async {
@@ -76,6 +87,105 @@ class FileService {
     tabsManager.tabs[tabsManager.currentTab].markdownState
         ?.saveVersion(content);
     tabsManager.tabs[tabsManager.currentTab].markdownState?.printState();
+  }
+
+  void savePdfNote(
+      BuildContext context, List<CanvasElement> canvasElements) async {
+    print("Saving in fileServices...");
+    final tabsManager = Provider.of<TabsManager>(context, listen: false);
+    // Build the stack
+    final pdfStack = await buildPdfStack(canvasElements);
+    // Add to the PDF document
+    final pdf = pw.Document();
+    pdf.addPage(
+        pw.Page(pageFormat: PdfPageFormat.a4, build: (context) => pdfStack));
+    // Save or share the PDF
+    String path = tabsManager.tabs[tabsManager.currentTab].filePath;
+    Uint8List byteData = await pdf.save();
+    FileHelper.writeByte(path, byteData);
+  }
+
+  // Prepare pdf content from editor
+  Future<pw.Stack> buildPdfStack(List<CanvasElement> canvasElements) async {
+    // Preload image bytes for all ImageElement
+    final preloadedImages = await Future.wait(
+      canvasElements.whereType<ImageElement>().map(
+            (element) async => MapEntry(
+              element,
+              await FileHelper.getAssetImageBytes(element.imagePath),
+            ),
+          ),
+    );
+
+    final imageBytesMap = {
+      for (var entry in preloadedImages) entry.key: entry.value
+    };
+
+    return pw.Stack(
+      children: canvasElements.map((element) {
+        if (element is DrawingElement) {
+          return _renderPdfPath(element);
+        } else if (element is TextElement) {
+          return _renderPdfText(element);
+        } else if (element is ImageElement) {
+          return _renderPdfImage(element, imageBytesMap[element]!);
+        }
+        return pw.Container();
+      }).toList(),
+    );
+  }
+
+  pw.Widget _renderPdfPath(DrawingElement element) {
+    return pw.CustomPaint(
+      size: const PdfPoint(500, 500),
+      painter: (PdfGraphics canvas, PdfPoint size) {
+        // Set color and stroke width directly on the canvas
+        canvas.setColor(PdfColor.fromInt(element.color.value));
+        canvas.setLineWidth(element.strokeWidth);
+
+        // Draw path
+        if (element.points.isNotEmpty) {
+          canvas.moveTo(
+            element.points.first.dx,
+            element.points.first.dy,
+          );
+          for (var point in element.points.skip(1)) {
+            canvas.lineTo(point.dx, point.dy);
+          }
+          canvas.strokePath(); // This uses the set properties
+        }
+      },
+    );
+  }
+
+  pw.Widget _renderPdfText(TextElement element) {
+    return pw.Positioned(
+      top: element.position.dy,
+      left: element.position.dx,
+      child: pw.Text(
+        element.text,
+        style: pw.TextStyle(
+          fontSize: element.fontSize,
+          color: PdfColor.fromInt(element.color.value),
+        ),
+      ),
+    );
+  }
+
+  pw.Widget _renderPdfImage(ImageElement element, Uint8List imageBytes) {
+    final pdfImage = pw.MemoryImage(imageBytes);
+    return pw.Positioned(
+      top: element.position.dy,
+      left: element.position.dx,
+      child: pw.Transform.rotate(
+        angle: element.rotation,
+        child: pw.Image(
+          pdfImage,
+          width: element.size.width,
+          height: element.size.height,
+        ),
+      ),
+    );
   }
 
   void renameFile(

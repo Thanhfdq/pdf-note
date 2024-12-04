@@ -1,9 +1,10 @@
 import 'package:flutter/foundation.dart';
+import 'package:pdf_note/constants/app_strings.dart';
 import 'package:pdf_note/providers/markdown_state.dart';
 import 'package:pdf_note/providers/pdf_state.dart';
 
 class TabState extends ChangeNotifier {
-  String mode = "new";
+  String mode = AppStrings.newTabMode;
   String filePath = "";
   MarkdownState? markdownState;
   PdfState? pdfState;

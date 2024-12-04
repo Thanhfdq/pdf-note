@@ -11,7 +11,7 @@ import 'package:provider/provider.dart';
 import '../widgets/app_bar.dart';
 import 'new_tab_screen.dart';
 import '../services/file_services.dart';
-import '../widgets/bottom_toolbar.dart';
+import 'package:file_picker/file_picker.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -22,6 +22,31 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkDefaultFolder();
+    });
+  }
+
+  Future<void> _checkDefaultFolder() async {
+    final tabsManager = Provider.of<TabsManager>(context, listen: false);
+    if (tabsManager.defaultFileLocation == "") {
+      String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
+
+      if (selectedDirectory == null) {
+        // User canceled the picker
+        return;
+      }
+
+      setState(() {
+        tabsManager.defaultFileLocation = "$selectedDirectory/";
+      });
+      print("default File location: ${tabsManager.defaultFileLocation}");
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return ZoomDrawer(
       menuScreen: const LeftDrawer(),
@@ -30,7 +55,6 @@ class _HomeState extends State<Home> {
       menuScreenWidth: 270,
       angle: 0.0,
       borderRadius: 0,
-      // dragOffset: double.infinity,
       mainScreenTapClose: true,
       menuBackgroundColor: Colors.grey,
     );
@@ -69,11 +93,5 @@ class HomeScreen extends StatelessWidget {
           );
         }),
         drawer: const LeftDrawer());
-    // endDrawer: RightDrawer(),
-    // bottomNavigationBar: currentTab.mode == AppStrings.pdfMode
-    //     ? currentTab.pdfState!.isViewMode
-    //         ? null
-    //         : const BottomToolbar()
-    //     : const BottomToolbar());
   }
 }

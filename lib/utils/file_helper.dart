@@ -1,12 +1,12 @@
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/services.dart';
 import 'package:path/path.dart' as path_dependency;
-
-import 'package:pdf_note/constants/app_strings.dart';
+import 'package:pdf_note/providers/tab_mangager.dart';
 
 class FileHelper {
   static String getPath(String fileName) {
-    return AppStrings.defaultFileLocation + fileName;
+    return TabsManager().defaultFileLocation + fileName;
   }
 
   static String getFileName(String filePath) {
@@ -18,10 +18,20 @@ class FileHelper {
   }
 
   // Write to any specified path
-  static Future<void> writeFile(String filePath, String content) async {
+  static void writeFile(String filePath, String content) async {
     try {
       final file = File(filePath);
       await file.writeAsString(content);
+      print("File written: $filePath");
+    } catch (e) {
+      print("Error writing file: $e");
+    }
+  }
+
+  static void writeByte(String filePath, Uint8List byteData) async {
+    try {
+      final file = File(filePath);
+      await file.writeAsBytes(byteData);
       print("File written: $filePath");
     } catch (e) {
       print("Error writing file: $e");
@@ -42,7 +52,7 @@ class FileHelper {
   }
 
   // Delete any file at a specified path
-  static Future<void> deleteFile(String filePath) async {
+  static void deleteFile(String filePath) async {
     try {
       final file = File(getPath(filePath));
       if (await file.exists()) {
@@ -83,5 +93,10 @@ class FileHelper {
     }
     print("No file selected.");
     return "";
+  }
+
+  static Future<Uint8List> getAssetImageBytes(String imagePath) async {
+    ByteData byteData = await rootBundle.load(imagePath);
+    return byteData.buffer.asUint8List();
   }
 }

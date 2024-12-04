@@ -23,7 +23,7 @@ class _MarkdownInputState extends State<MarkdownInput> {
   final TextEditingController _controller = TextEditingController();
   final TextEditingController _titleController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
-  
+
   @override
   void initState() {
     super.initState();
