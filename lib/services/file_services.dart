@@ -144,13 +144,17 @@ class FileService {
         canvas.setLineWidth(element.strokeWidth);
 
         // Draw path
+        final height = size.y;
         if (element.points.isNotEmpty) {
           canvas.moveTo(
             element.points.first.dx,
-            element.points.first.dy,
+            height - element.points.first.dy, // Adjust Y-coordinate
           );
           for (var point in element.points.skip(1)) {
-            canvas.lineTo(point.dx, point.dy);
+            canvas.lineTo(
+              point.dx,
+              height - point.dy,
+            ); // Adjust Y-coordinate
           }
           canvas.strokePath(); // This uses the set properties
         }

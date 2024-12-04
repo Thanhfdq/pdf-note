@@ -67,14 +67,9 @@ class _PdfEditorScreenState extends State<PdfEditorScreen> {
   }
 
   // Add text box
-  // void addTextBox(String text, Offset position) {
-  //   canvasElements.add(TextElement(
-  //     position: position,
-  //     text: text,
-  //     fontSize: 16,
-  //     color: Colors.black,
-  //   ));
-  // }
+  void addTextBox(String text, Offset position) {
+    data.addTextBox(position, text, 16, Colors.black, 0.0);
+  }
 
   // // Add image
   // void addImage(String imagePath, Offset position, Size size) {
@@ -204,7 +199,10 @@ class _PdfEditorScreenState extends State<PdfEditorScreen> {
                               icon: const Icon(CupertinoIcons.textbox,
                                   color: Colors.white),
                               // onPressed: _addTextBox,
-                              onPressed: () {},
+                              onPressed: () {
+                                addTextBox(
+                                    "Sample2 text", const ui.Offset(200, 200));
+                              },
                             ),
                             IconButton(
                               icon: const Icon(
