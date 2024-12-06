@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:pdf_note/constants/app_strings.dart';
 import 'package:pdf_note/providers/tab_mangager.dart';
 import 'package:pdf_note/screens/markdown_editor.dart';
@@ -48,16 +47,7 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    return ZoomDrawer(
-      menuScreen: const LeftDrawer(),
-      mainScreen: HomeScreen(),
-      mainScreenScale: 0.0,
-      menuScreenWidth: 270,
-      angle: 0.0,
-      borderRadius: 0,
-      mainScreenTapClose: true,
-      menuBackgroundColor: Colors.grey,
-    );
+    return HomeScreen();
   }
 }
 
@@ -87,7 +77,8 @@ class HomeScreen extends StatelessWidget {
                               .tabs[tabsManager.currentTab].pdfState!.isViewMode
                           ? const PdfViewerScreen()
                           : const PdfEditorScreen()
-                      : NewTabScreen(fileService: fileService), // New Tab
+                      : NewTabScreen(fileService: fileService),
+              if (tabsManager.isTabWindowOpen) const LeftDrawer(), // New Tab
               if (tabManager.isOptionsOpen) const FileOptions()
             ],
           );

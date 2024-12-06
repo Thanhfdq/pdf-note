@@ -14,8 +14,10 @@ class TabsManager with ChangeNotifier {
   List<TabState> get tabs => List.unmodifiable(_tabs);
   int currentTab = 0;
   String defaultFileLocation = "";
-  bool _isOptionsOpen = false;
-  bool get isOptionsOpen => _isOptionsOpen;
+  bool _isTabWindowOpen = false;
+  bool _isOptionsWindowOpen = false;
+  bool get isOptionsOpen => _isOptionsWindowOpen;
+  bool get isTabWindowOpen => _isTabWindowOpen;
 
   void setCurrentTab(int index) {
     currentTab = index;
@@ -76,8 +78,13 @@ class TabsManager with ChangeNotifier {
     return isSuccess;
   }
 
+  void toggleTabWindow() {
+    _isTabWindowOpen = !_isTabWindowOpen;
+    notifyListeners();
+  }
+
   void toggleOption() {
-    _isOptionsOpen = !_isOptionsOpen;
+    _isOptionsWindowOpen = !_isOptionsWindowOpen;
     notifyListeners();
   }
 }

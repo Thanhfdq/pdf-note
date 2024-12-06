@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
@@ -19,12 +21,23 @@ class _LeftDrawerState extends State<LeftDrawer> {
   @override
   Widget build(BuildContext context) {
     TabsManager tabsManager = Provider.of<TabsManager>(context);
-    return Drawer(
-      backgroundColor: Colors.transparent,
-      child: Padding(
+    return Stack(children: [
+      // Blurred Background
+      GestureDetector(
+        onTap: tabsManager.toggleTabWindow,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            color: Colors.white.withOpacity(0.5),
+          ),
+        ),
+      ),
+      // Content
+      Padding(
         padding: const EdgeInsets.all(0),
         child: Column(
           children: [
+            // Show number of tabs
             Row(
               children: [
                 Expanded(
@@ -37,11 +50,12 @@ class _LeftDrawerState extends State<LeftDrawer> {
                 )),
               ],
             ),
+            // List tabs opening
             Expanded(
               child: GridView.builder(
                 reverse: true,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 1, // Number of columns
+                  crossAxisCount: 2, // Number of columns
                   mainAxisSpacing: 0, // Spacing between rows
                 ),
                 // padding: const EdgeInsets.all(8),
@@ -51,7 +65,7 @@ class _LeftDrawerState extends State<LeftDrawer> {
                     onTap: () {
                       tabsManager
                           .setCurrentTab(index); // Switch to the selected tab
-                      ZoomDrawer.of(context)!.close(); // Close the drawer
+                      tabsManager.toggleTabWindow(); // Close the drawer
                     },
                     child: Padding(
                       padding:
@@ -132,6 +146,7 @@ class _LeftDrawerState extends State<LeftDrawer> {
                 },
               ),
             ),
+            // Actions
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -150,6 +165,6 @@ class _LeftDrawerState extends State<LeftDrawer> {
           ],
         ),
       ),
-    );
+    ]);
   }
 }

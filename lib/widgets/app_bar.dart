@@ -21,7 +21,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       leading: CustomButton(
         onPressed: () {
           // scaffoldKey.currentState?.openDrawer();
-          ZoomDrawer.of(context)!.toggle();
+          // ZoomDrawer.of(context)!.toggle();
+          tabsManager.toggleTabWindow();
         },
         icon: CupertinoIcons.rectangle_stack,
       ),
