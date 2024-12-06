@@ -3,7 +3,8 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:pdf_note/constants/app_strings.dart';
-import 'package:pdf_note/providers/pdf_data.dart';
+import 'package:pdf_note/models/canvas_element.dart';
+import 'package:pdf_note/providers/canvas_state.dart';
 import 'package:pdf_note/providers/tab_mangager.dart';
 import 'package:pdf_note/services/file_services.dart';
 import 'package:pdf_note/widgets/canvas_painter.dart';
@@ -18,13 +19,15 @@ class PdfEditorScreen extends StatefulWidget {
 }
 
 class _PdfEditorScreenState extends State<PdfEditorScreen> {
-  double _top = 0;
-  double _left = 0;
+  // Bar positioning data
+  double _toolBarTop = 0;
+  double _toolBarLeft = 0;
   bool _isStuckToBottom = true;
   bool _isStuckToTop = false;
   bool _isBarVisible = false;
 
-  PdfData data = PdfData();
+  // Canvas data of current page
+  CanvasState canvasData = CanvasState();
 
   @override
   void initState() {
@@ -38,47 +41,20 @@ class _PdfEditorScreenState extends State<PdfEditorScreen> {
         final tabsManager = Provider.of<TabsManager>(context, listen: false);
 
         setState(() {
-          _top = screenHeight - 50;
-          _left = 0;
+          // Init tool bar position at the bottom
+          _toolBarTop = screenHeight - 50;
+          _toolBarLeft = 0;
           _isBarVisible = true;
 
-          // Lấy dữ liệu PDF
-          final currentPage =
+          // Listen page data from provider
+          final currentPageNumber =
               tabsManager.tabs[tabsManager.currentTab].pdfState!.currentPage;
-          data = tabsManager
-              .tabs[tabsManager.currentTab].pdfState!.pdfDatas[currentPage - 1];
+          canvasData = tabsManager.tabs[tabsManager.currentTab].pdfState!
+              .pageDatas[currentPageNumber - 1];
         });
       }
     });
   }
-
-  // Call when start draw on screen by Pen tool
-  void startDrawing(Offset position) {
-    setState(() {
-      data.addDrawing(position, [position], Colors.black, 2.0, 0.0);
-    });
-  }
-
-  // Continue the draw
-  void continueDrawing(Offset newPoint) {
-    setState(() {
-      data.addPoint(data.canvasElements.length - 1, newPoint);
-    });
-  }
-
-  // Add text box
-  void addTextBox(String text, Offset position) {
-    data.addTextBox(position, text, 16, Colors.black, 0.0);
-  }
-
-  // // Add image
-  // void addImage(String imagePath, Offset position, Size size) {
-  //   canvasElements.add(ImageElement(
-  //     position: position,
-  //     imagePath: imagePath,
-  //     size: size,
-  //   ));
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -86,34 +62,39 @@ class _PdfEditorScreenState extends State<PdfEditorScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
     final int appBarHeight = Scaffold.of(context).appBarMaxHeight!.toInt();
-    // Get Data
+    // Get state datas
     final tabsManager = Provider.of<TabsManager>(context);
-    int currentPageIndex =
-        tabsManager.tabs[tabsManager.currentTab].pdfState!.currentPage;
     final currentPdfState = tabsManager.tabs[tabsManager.currentTab].pdfState;
-    final currentPageData = tabsManager
-        .tabs[tabsManager.currentTab].pdfState!.pdfDatas[currentPageIndex - 1];
+    final currentPageNumber = currentPdfState!.currentPage;
+    // Data
+    final currentPageData = currentPdfState.pageDatas[currentPageNumber - 1];
 
     return Stack(
       children: [
-        // Content
+        // Page Data
         Positioned.fill(
           top: _isStuckToTop ? 50 : 0,
           bottom: _isStuckToBottom ? 50 : 0,
-          child: // Drawing Canvas and Text Boxes
-              GestureDetector(
+          child: GestureDetector(
             onPanStart: (details) {
               setState(() {
-                startDrawing(details.localPosition);
+                if (currentPdfState.currentTool == AppStrings.penTool) {
+                  newInkStroke(details.localPosition);
+                } else if (currentPdfState.currentTool ==
+                    AppStrings.eraserTool) {
+                  newEraseStroke(details.localPosition);
+                }
               });
             },
             onPanUpdate: (details) {
               setState(() {
-                continueDrawing(details.localPosition);
+                if (currentPdfState.currentTool == AppStrings.penTool) {
+                  inkStrokeExtense(details.localPosition);
+                } else if (currentPdfState.currentTool ==
+                    AppStrings.eraserTool) {
+                  eraseStrokeExtense(details.localPosition);
+                }
               });
-            },
-            onPanEnd: (_) {
-              print("end drawing.");
             },
             child: CustomPaint(
               painter: CanvasPainter(currentPageData.canvasElements),
@@ -122,35 +103,35 @@ class _PdfEditorScreenState extends State<PdfEditorScreen> {
           ),
         ),
 
-        // Draggable panel
+        // Draggable toolbar
         if (_isBarVisible)
           AnimatedPositioned(
             duration: const Duration(milliseconds: 0),
-            top: _top,
-            left: _left,
+            top: _toolBarTop,
+            left: _toolBarLeft,
             child: GestureDetector(
               onPanStart: (_) {},
               onPanUpdate: (details) {
                 setState(() {
                   _isStuckToBottom = false;
                   _isStuckToTop = false;
-                  _top += details.delta.dy;
-                  _left += details.delta.dx;
+                  _toolBarTop += details.delta.dy;
+                  _toolBarLeft += details.delta.dx;
                 });
               },
               onPanEnd: (_) {
                 setState(() {
                   // Stick to top or bottom if near
-                  if (_top <= 0) {
+                  if (_toolBarTop <= 0) {
                     _isStuckToTop = true;
                     _isStuckToBottom = false;
-                    _top = 0;
-                    _left = 0;
-                  } else if (_top >= screenHeight - appBarHeight - 50) {
+                    _toolBarTop = 0;
+                    _toolBarLeft = 0;
+                  } else if (_toolBarTop >= screenHeight - appBarHeight - 50) {
                     _isStuckToBottom = true;
                     _isStuckToTop = false;
-                    _top = screenHeight - appBarHeight - 50;
-                    _left = 0;
+                    _toolBarTop = screenHeight - appBarHeight - 50;
+                    _toolBarLeft = 0;
                   }
                 });
               },
@@ -181,11 +162,14 @@ class _PdfEditorScreenState extends State<PdfEditorScreen> {
                             ),
                             IconButton(
                               icon: Icon(CupertinoIcons.clear_fill,
-                                  color: currentPdfState!.currentTool ==
+                                  color: currentPdfState.currentTool ==
                                           AppStrings.eraserTool
                                       ? Colors.blue
                                       : Colors.white),
-                              onPressed: _clearCanvas,
+                              onPressed: () {
+                                print("erasing...");
+                                _changeTool(AppStrings.eraserTool);
+                              },
                             ),
                             IconButton(
                               icon: Icon(CupertinoIcons.pen,
@@ -193,7 +177,9 @@ class _PdfEditorScreenState extends State<PdfEditorScreen> {
                                           AppStrings.penTool
                                       ? Colors.blue
                                       : Colors.white),
-                              onPressed: () {},
+                              onPressed: () {
+                                _changeTool(AppStrings.penTool);
+                              },
                             ),
                             IconButton(
                               icon: const Icon(CupertinoIcons.textbox,
@@ -215,7 +201,7 @@ class _PdfEditorScreenState extends State<PdfEditorScreen> {
                               icon: const Icon(
                                   CupertinoIcons.arrow_turn_up_right,
                                   color: Colors.white),
-                              onPressed: _redo,
+                              onPressed: () {},
                             ),
                           ]),
                     ),
@@ -228,12 +214,73 @@ class _PdfEditorScreenState extends State<PdfEditorScreen> {
     );
   }
 
+  // Canvas actions
+  // drawing
+  void newInkStroke(Offset position) {
+    // Get state datas
+    final tabsManager = Provider.of<TabsManager>(context, listen: false);
+    final currentPdfState = tabsManager.tabs[tabsManager.currentTab].pdfState;
+    setState(() {
+      canvasData.addInkStroke(
+          position,
+          [position],
+          currentPdfState?.penConfig.color,
+          currentPdfState?.penConfig.strokewidth,
+          0.0);
+    });
+  }
+
+  void inkStrokeExtense(Offset position) {
+    setState(() =>
+        (canvasData.canvasElements.last as InkStroke).inkDots.add(position));
+  }
+
+  //Erase
+  void newEraseStroke(Offset position) {
+    // Get state datas
+    final tabsManager = Provider.of<TabsManager>(context, listen: false);
+    final currentPdfState = tabsManager.tabs[tabsManager.currentTab].pdfState;
+    setState(() {
+      canvasData.addEraser(
+          position, [position], currentPdfState!.eraserConfig.eraseStrokeWidth);
+    });
+  }
+
+  void eraseStrokeExtense(Offset position) {
+    setState(() => (canvasData.canvasElements.last as EraserStroke)
+        .eraserDots
+        .add(position));
+  }
+
+  // Add text box
+  void addTextBox(String text, Offset position) {
+    setState(() {
+      canvasData.addTextBox(position, text, 16, Colors.black, 0.0);
+    });
+  }
+  // // Add image
+  // void addImage(String imagePath, Offset position, Size size) {
+  //   canvasElements.add(ImageElement(
+  //     position: position,
+  //     imagePath: imagePath,
+  //     size: size,
+  //   ));
+  // }
+
+  void _changeTool(String tool) {
+    final tabsManager = Provider.of<TabsManager>(context, listen: false);
+    final currentPdfState = tabsManager.tabs[tabsManager.currentTab].pdfState;
+    setState(() {
+      currentPdfState?.currentTool = tool;
+    });
+  }
+
   void _clearCanvas() {
-    final tabsManager = Provider.of<TabsManager>(context);
+    final tabsManager = Provider.of<TabsManager>(context, listen: false);
     int currentPageIndex =
         tabsManager.tabs[tabsManager.currentTab].pdfState!.currentPage - 1;
     final currentPageData = tabsManager
-        .tabs[tabsManager.currentTab].pdfState!.pdfDatas[currentPageIndex];
+        .tabs[tabsManager.currentTab].pdfState!.pageDatas[currentPageIndex];
     setState(() {
       currentPageData.canvasElements.clear();
     });
@@ -245,22 +292,12 @@ class _PdfEditorScreenState extends State<PdfEditorScreen> {
   //   });
   // }
 
-  // void _undo() {
-  //   setState(() {
-  //     if (_paths.isNotEmpty) _paths.removeLast();
-  //   });
-  // }
-
-  void _redo() {
-    // Implement redo functionality if required
-  }
-
   void _save() {
     final tabsManager = Provider.of<TabsManager>(context, listen: false);
     setState(() {
       FileService().savePdfNote(
           context,
-          tabsManager.tabs[tabsManager.currentTab].pdfState!.pdfDatas[0]
+          tabsManager.tabs[tabsManager.currentTab].pdfState!.pageDatas[0]
               .canvasElements);
     });
     print("Saving...");

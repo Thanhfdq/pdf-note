@@ -4,7 +4,7 @@ import 'package:pdf_note/constants/app_colors.dart';
 import 'package:pdf_note/constants/app_numbers.dart';
 
 class PenConfig {
-  Color _color = AppColors.defaultColorPen;
+  Color _color = AppColors.defaultPenColor;
   double _strokeWidth = AppNumbers.defaultStrokeWidth;
 
   Color get color => _color;

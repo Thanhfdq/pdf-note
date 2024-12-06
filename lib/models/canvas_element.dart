@@ -2,46 +2,58 @@ import 'dart:ui';
 
 abstract class CanvasElement {
   Offset position;
-  double rotation;
-  Color color;
+  double? rotation;
 
-  CanvasElement(this.position, this.rotation, this.color);
+  CanvasElement(this.position, this.rotation);
 }
 
-class DrawingElement extends CanvasElement {
-  List<Offset> points;
+class InkStroke extends CanvasElement {
+  List<Offset> inkDots;
   double strokeWidth;
+  Color inkColor;
 
-  DrawingElement(
+  InkStroke(
       {required Offset position,
-      required Color color,
+      required this.inkColor,
       double rotation = 0.0,
-      required this.points,
+      required this.inkDots,
       required this.strokeWidth})
-      : super(position, rotation, color);
+      : super(position, rotation);
 }
 
-class TextElement extends CanvasElement {
-  String text;
+class TextBox extends CanvasElement {
+  String content;
   double fontSize;
+  Color textColor;
 
-  TextElement({
+  TextBox({
     required Offset position,
-    required this.text,
+    required this.content,
     required this.fontSize,
-    required Color color,
+    required this.textColor,
     double rotation = 0,
-  }) : super(position, rotation, color);
+  }) : super(position, rotation);
 }
 
-class ImageElement extends CanvasElement {
+class InsertImage extends CanvasElement {
   String imagePath;
   Size size;
 
-  ImageElement({
+  InsertImage({
     required Offset position,
     required this.imagePath,
     required this.size,
     double rotation = 0,
-  }) : super(position, rotation, const Color(0x00000000));
+  }) : super(position, rotation);
+}
+
+class EraserStroke extends CanvasElement {
+  List<Offset> eraserDots;
+  double strokeWidth;
+
+  EraserStroke(
+      {required this.eraserDots,
+      required Offset position,
+      required this.strokeWidth})
+      : super(position, 0.0);
 }

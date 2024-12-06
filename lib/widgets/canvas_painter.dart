@@ -1,86 +1,129 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
-import 'package:pdf_note/utils/file_helper.dart';
 import 'package:flutter/material.dart';
+import 'package:pdf_note/constants/app_colors.dart';
+import 'package:pdf_note/utils/file_helper.dart';
 import 'package:pdf_note/models/canvas_element.dart';
 
 class CanvasPainter extends CustomPainter {
-  final List<CanvasElement> elements;
+  final List<CanvasElement> canvasElements;
 
-  CanvasPainter(this.elements);
+  CanvasPainter(this.canvasElements);
+
+  ui.Picture? _cachedPicture;
+  ui.Image? _cachedImage;
 
   @override
   void paint(Canvas canvas, Size size) {
-    for (var element in elements) {
-      if (element is DrawingElement) {
-        _drawPath(canvas, element);
-      } else if (element is TextElement) {
-        _drawText(canvas, element);
-      } else if (element is ImageElement) {
-        _drawImage(canvas, element);
-      }
+    // Nếu đã cache, vẽ từ cached image
+    if (_cachedImage != null) {
+      paintImage(
+        canvas: canvas,
+        rect: Offset.zero & size,
+        image: _cachedImage!,
+      );
+      return;
     }
+
+    // Ghi lại các phần tử lên ui.Picture
+    final recorder = ui.PictureRecorder();
+    final recordedCanvas = Canvas(recorder, Offset.zero & size);
+    // Xóa nền bằng màu trắng hoặc màu nền mong muốn
+    // canvas.drawColor(Colors.white, BlendMode.src);
+    // Vẽ từng phần tử
+    for (var element in canvasElements) {
+      if (element is InkStroke) {
+        _drawInkStroke(recordedCanvas, element);
+      } else if (element is EraserStroke) {
+        _drawEraseStroke(recordedCanvas, element);
+      } else if (element is TextBox) {
+        _drawTextbox(recordedCanvas, element);
+      }
+      // else if (element is InsertImage) {
+      //   _drawImage(canvas, element);
+      // }
+    }
+
+    // Lưu lại Picture và Image
+    _cachedPicture = recorder.endRecording();
+    _cachedPicture!
+        .toImage(size.width.toInt(), size.height.toInt())
+        .then((image) {
+      _cachedImage = image;
+    });
+
+    // Vẽ picture lên canvas
+    canvas.drawPicture(_cachedPicture!);
   }
 
-  void _drawPath(Canvas canvas, DrawingElement element) {
-    final paint = Paint()
-      ..color = element.color
-      ..strokeWidth = element.strokeWidth
+  // Draw the given ink stroke on canvas
+  void _drawInkStroke(Canvas canvas, InkStroke inkStroke) {
+    // Prepare the paint to draw
+    final inkPaint = Paint()
+      ..color = inkStroke.inkColor
+      ..strokeWidth = inkStroke.strokeWidth
+      ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
 
-    final path = Path();
-    path.moveTo(element.points.first.dx, element.points.first.dy);
-    for (var point in element.points.skip(1)) {
-      path.lineTo(point.dx, point.dy);
+    for (int i = 0; i < inkStroke.inkDots.length - 1; i++) {
+      canvas.drawLine(inkStroke.inkDots[i], inkStroke.inkDots[i + 1], inkPaint);
     }
-    canvas.drawPath(path, paint);
   }
 
-  void _drawText(Canvas canvas, TextElement element) {
-    final textPainter = TextPainter(
+  // Draw the given erase stroke on canvas
+  void _drawEraseStroke(Canvas canvas, EraserStroke eraseStroke) {
+    final eraserPaint = Paint()
+      // ..blendMode = BlendMode.clear
+      ..color = AppColors.defaultBackground
+      ..strokeWidth = eraseStroke.strokeWidth
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
+
+    for (int i = 0; i < eraseStroke.eraserDots.length - 1; i++) {
+      canvas.drawLine(eraseStroke.eraserDots[i], eraseStroke.eraserDots[i + 1],
+          eraserPaint);
+    }
+  }
+
+  // Draw the given textbox on canvas
+  void _drawTextbox(Canvas canvas, TextBox textbox) {
+    final textboxPainter = TextPainter(
       text: TextSpan(
-        text: element.text,
+        text: textbox.content,
         style: TextStyle(
-          color: element.color,
-          fontSize: element.fontSize,
+          color: textbox.textColor,
+          fontSize: textbox.fontSize,
         ),
       ),
       textDirection: TextDirection.ltr,
     );
-    textPainter.layout();
-    textPainter.paint(canvas, element.position);
+    textboxPainter.layout();
+    textboxPainter.paint(canvas, textbox.position);
   }
 
-  void _drawImage(Canvas canvas, ImageElement element) async {
-    // Get image from imagePath of element and convert to image in PaintImage
-    Uint8List byteData = await FileHelper.getAssetImageBytes(element.imagePath);
-    final ui.Image image = await decodeImageFromList(byteData);
+  // Draw the given texbox on canvas
+  // void _drawImage(Canvas canvas, InsertImage element) async {
+  //   Uint8List byteData = await FileHelper.getAssetImageBytes(element.imagePath);
+  //   final ui.Image image = await decodeImageFromList(byteData);
 
-    // Paint image
-    paintImage(
-      canvas: canvas,
-      rect: Rect.fromLTWH(
-        element.position.dx,
-        element.position.dy,
-        element.size.width,
-        element.size.height,
-      ),
-      image: image,
-    );
-  }
+  //   paintImage(
+  //     canvas: canvas,
+  //     rect: Rect.fromLTWH(
+  //       element.position.dx,
+  //       element.position.dy,
+  //       element.size.width,
+  //       element.size.height,
+  //     ),
+  //     image: image,
+  //   );
+  // }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 
-  // Convert List<Offset> to Path (for optimize render performance)
-  Path createPathFromOffsets(List<Offset> points) {
-    final path = Path();
-    if (points.isNotEmpty) {
-      path.moveTo(points[0].dx, points[0].dy);
-      for (int i = 1; i < points.length; i++) {
-        path.lineTo(points[i].dx, points[i].dy);
-      }
-    }
-    return path;
-  }
+  // Hàm để xóa cache (nếu cần khởi tạo lại)
+  // void clearCache() {
+  //   _cachedPicture = null;
+  //   _cachedImage = null;
+  // }
 }

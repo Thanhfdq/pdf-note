@@ -38,8 +38,8 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
       final pdfState = tabsManager.tabs[tabsManager.currentTab].pdfState;
       _pdfViewerController.addListener(() {
         setState(() {
-          pdfState?.setCurrentPage(_pdfViewerController.pageNumber);
-          pdfState?.setTotalPages(_pdfViewerController.pageCount);
+          pdfState?.currentPage = _pdfViewerController.pageNumber;
+          pdfState?.totalPages = _pdfViewerController.pageCount;
         });
       });
       _pageTextFieldController.text =

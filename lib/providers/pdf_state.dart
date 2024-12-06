@@ -1,65 +1,88 @@
 import 'package:flutter/foundation.dart';
 import 'package:pdf_note/constants/app_strings.dart';
+import 'package:pdf_note/models/eraser_config.dart';
 import 'package:pdf_note/models/pen_config.dart';
 import 'package:pdf_note/models/textbox_config.dart';
-import 'package:pdf_note/providers/pdf_data.dart';
+import 'package:pdf_note/providers/canvas_state.dart';
 
 class PdfState with ChangeNotifier {
+  // List data of each page, a CanvasState is an page's data
+  List<CanvasState> _pageDatas = [
+    CanvasState()
+  ]; // Default a pdf page always have 1 pdfData
   int _currentPage = 1; // Track the current page
   int _totalPages = 1; // Track total pages
-  bool _isViewMode = false;
-  final List<PdfData> _pdfDatas = [
-    PdfData()
-  ]; // Default a pdf page always have 1 pdfData
-  String _currentTool = AppStrings.penTool;
-  PenConfig _penConfig = PenConfig();
-  TextboxConfig _textboxConfig = TextboxConfig();
+  bool _isViewMode = false; // Track the mode is view pdf or editting
+  String _currentTool = AppStrings.penTool; // Save the current using tool
+  PenConfig _penConfig = PenConfig(); // current pen configurations
+  TextboxConfig _textboxConfig =
+      TextboxConfig(); // current textbox configurations
+  EraserConfig _eraserConfig = EraserConfig(); // current eraser configurations
 
-  String get currentTool => _currentTool;
-  PenConfig get penConfig => _penConfig;
-  TextboxConfig get textboxConfig => _textboxConfig;
-
-  List<PdfData> get pdfDatas => _pdfDatas;
-  int get currentPage => _currentPage;
-  int get totalPages => _totalPages;
-  bool get isViewMode => _isViewMode;
-
-  void setCurrentPage(int page) {
-    _currentPage = page;
+  // Getters & Setter
+  // pdf's data
+  List<CanvasState> get pageDatas => _pageDatas;
+  set pageDatas(List<CanvasState> value) {
+    _pageDatas = value;
     notifyListeners();
   }
 
   void addPage() {
-    _pdfDatas.add(PdfData());
+    _pageDatas.add(CanvasState());
     notifyListeners();
   }
 
   set removePage(int index) {
-    _pdfDatas.removeAt(index);
+    _pageDatas.removeAt(index);
     notifyListeners();
   }
 
-  void setTotalPages(int totalPages) {
-    _totalPages = totalPages;
+  // current page
+  int get currentPage => _currentPage;
+  set currentPage(int value) {
+    _currentPage = value;
     notifyListeners();
   }
 
-  set setMode(bool isViewMode) {
-    _isViewMode = isViewMode;
+  // total page
+  int get totalPages => _totalPages;
+  set totalPages(int value) {
+    _totalPages = value;
+    notifyListeners();
   }
 
+  // is view mode
+  bool get isViewMode => _isViewMode;
+  set isViewMode(bool value) {
+    _isViewMode = value;
+    notifyListeners();
+  }
+
+  // current tool
+  String get currentTool => _currentTool;
   set currentTool(String value) {
     _currentTool = value;
     notifyListeners();
   }
 
+  // pen config
+  PenConfig get penConfig => _penConfig;
   set penConfig(PenConfig value) {
     _penConfig = value;
     notifyListeners();
   }
 
+  // text config
+  TextboxConfig get textboxConfig => _textboxConfig;
   set textboxConfig(TextboxConfig value) {
     _textboxConfig = value;
+    notifyListeners();
+  }
+
+  //eraser config
+  EraserConfig get eraserConfig => _eraserConfig;
+  set eraserConfig(EraserConfig value) {
+    _eraserConfig = value;
     notifyListeners();
   }
 }

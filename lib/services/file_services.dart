@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf_note/constants/app_strings.dart';
 import 'package:pdf_note/models/canvas_element.dart';
@@ -36,7 +37,8 @@ class FileService {
   String generateFileName() {
 // Generate a unique file name (e.g., "note_YYYYMMDD_HHMMSS.md")
     final now = DateTime.now();
-    return "note_${now.toIso8601String().replaceAll(':', '_')}";
+    final formatter = DateFormat('ddMMyyyy_HHmmss');
+    return 'note_${formatter.format(now)}';
   }
 
   void createNewPdfFile(BuildContext context) {
@@ -109,7 +111,7 @@ class FileService {
   Future<pw.Stack> buildPdfStack(List<CanvasElement> canvasElements) async {
     // Preload image bytes for all ImageElement
     final preloadedImages = await Future.wait(
-      canvasElements.whereType<ImageElement>().map(
+      canvasElements.whereType<InsertImage>().map(
             (element) async => MapEntry(
               element,
               await FileHelper.getAssetImageBytes(element.imagePath),
@@ -123,34 +125,36 @@ class FileService {
 
     return pw.Stack(
       children: canvasElements.map((element) {
-        if (element is DrawingElement) {
+        if (element is InkStroke) {
           return _renderPdfPath(element);
-        } else if (element is TextElement) {
+        } else if (element is TextBox) {
           return _renderPdfText(element);
-        } else if (element is ImageElement) {
+        } else if (element is InsertImage) {
           return _renderPdfImage(element, imageBytesMap[element]!);
+        } else if (element is EraserStroke) {
+          return _renderPdfEraser(element);
         }
         return pw.Container();
       }).toList(),
     );
   }
 
-  pw.Widget _renderPdfPath(DrawingElement element) {
+  pw.Widget _renderPdfPath(InkStroke element) {
     return pw.CustomPaint(
       size: const PdfPoint(500, 500),
       painter: (PdfGraphics canvas, PdfPoint size) {
         // Set color and stroke width directly on the canvas
-        canvas.setColor(PdfColor.fromInt(element.color.value));
+        canvas.setColor(PdfColor.fromInt(element.inkColor.value));
         canvas.setLineWidth(element.strokeWidth);
 
         // Draw path
         final height = size.y;
-        if (element.points.isNotEmpty) {
+        if (element.inkDots.isNotEmpty) {
           canvas.moveTo(
-            element.points.first.dx,
-            height - element.points.first.dy, // Adjust Y-coordinate
+            element.inkDots.first.dx,
+            height - element.inkDots.first.dy, // Adjust Y-coordinate
           );
-          for (var point in element.points.skip(1)) {
+          for (var point in element.inkDots.skip(1)) {
             canvas.lineTo(
               point.dx,
               height - point.dy,
@@ -162,27 +166,44 @@ class FileService {
     );
   }
 
-  pw.Widget _renderPdfText(TextElement element) {
+  pw.Widget _renderPdfEraser(EraserStroke eraser) {
+    return pw.CustomPaint(
+      size: const PdfPoint(500, 500),
+      painter: (PdfGraphics canvas, PdfPoint size) {
+        // Vẽ vùng bị xóa bằng màu trắng
+        canvas.setColor(const PdfColor(1, 1, 1)); // White color
+        canvas.drawEllipse(
+          eraser.position.dx,
+          size.y - eraser.position.dy, // Adjust Y-coordinate
+          eraser.strokeWidth,
+          eraser.strokeWidth,
+        );
+        canvas.fillPath(); // Fill the area
+      },
+    );
+  }
+
+  pw.Widget _renderPdfText(TextBox element) {
     return pw.Positioned(
       top: element.position.dy,
       left: element.position.dx,
       child: pw.Text(
-        element.text,
+        element.content,
         style: pw.TextStyle(
           fontSize: element.fontSize,
-          color: PdfColor.fromInt(element.color.value),
+          color: PdfColor.fromInt(element.textColor.value),
         ),
       ),
     );
   }
 
-  pw.Widget _renderPdfImage(ImageElement element, Uint8List imageBytes) {
+  pw.Widget _renderPdfImage(InsertImage element, Uint8List imageBytes) {
     final pdfImage = pw.MemoryImage(imageBytes);
     return pw.Positioned(
       top: element.position.dy,
       left: element.position.dx,
       child: pw.Transform.rotate(
-        angle: element.rotation,
+        angle: 0.0,
         child: pw.Image(
           pdfImage,
           width: element.size.width,
