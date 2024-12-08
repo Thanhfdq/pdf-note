@@ -25,6 +25,11 @@ class _PdfEditorScreenState extends State<PdfEditorScreen> {
   bool _isStuckToBottom = true;
   bool _isStuckToTop = false;
   bool _isBarVisible = false;
+  // Zooming canvas
+  double _scale = 1.0; // Default zoom level
+  double _previousScale = 1.0;
+  Offset _offset = Offset.zero; // Offset for panning
+  Offset _previousOffset = Offset.zero;
 
   // Canvas data of current page
   CanvasState canvasData = CanvasState();
@@ -73,35 +78,54 @@ class _PdfEditorScreenState extends State<PdfEditorScreen> {
       children: [
         // Page Data
         Positioned.fill(
-          top: _isStuckToTop ? 50 : 0,
-          bottom: _isStuckToBottom ? 50 : 0,
-          child: GestureDetector(
-            onPanStart: (details) {
-              setState(() {
-                if (currentPdfState.currentTool == AppStrings.penTool) {
-                  newInkStroke(details.localPosition);
-                } else if (currentPdfState.currentTool ==
-                    AppStrings.eraserTool) {
-                  newEraseStroke(details.localPosition);
-                }
-              });
-            },
-            onPanUpdate: (details) {
-              setState(() {
-                if (currentPdfState.currentTool == AppStrings.penTool) {
-                  inkStrokeExtense(details.localPosition);
-                } else if (currentPdfState.currentTool ==
-                    AppStrings.eraserTool) {
-                  eraseStrokeExtense(details.localPosition);
-                }
-              });
-            },
-            child: CustomPaint(
-              painter: CanvasPainter(currentPageData.canvasElements),
-              size: Size.infinite,
-            ),
-          ),
-        ),
+            top: _isStuckToTop ? 50 : 0,
+            bottom: _isStuckToBottom ? 50 : 0,
+            child: GestureDetector(
+                // onScaleStart: (details) {
+                //   _previousScale = _scale;
+                //   _previousOffset = _offset;
+                // },
+                // onScaleUpdate: (details) {
+                //   setState(() {
+                //     // Update scale (zoom)
+                //     _scale = _previousScale * details.scale;
+
+                //     // Update offset (pan)
+                //     _offset =
+                //         _previousOffset + details.focalPointDelta / _scale;
+                //   });
+                // },
+                onPanStart: (details) {
+                  setState(() {
+                    if (currentPdfState.currentTool == AppStrings.penTool) {
+                      newInkStroke(details.localPosition);
+                    } else if (currentPdfState.currentTool ==
+                        AppStrings.eraserTool) {
+                      newEraseStroke(details.localPosition);
+                    }
+                  });
+                },
+                onPanUpdate: (details) {
+                  setState(() {
+                    if (currentPdfState.currentTool == AppStrings.penTool) {
+                      inkStrokeExtense(details.localPosition);
+                    } else if (currentPdfState.currentTool ==
+                        AppStrings.eraserTool) {
+                      eraseStrokeExtense(details.localPosition);
+                    }
+                  });
+                },
+                child: ClipRect(
+                  child: Transform(
+                    transform: Matrix4.identity()
+                      ..scale(_scale)
+                      ..translate(_offset.dx, _offset.dy),
+                    child: CustomPaint(
+                      painter: CanvasPainter(currentPageData.canvasElements),
+                      size: Size.infinite,
+                    ),
+                  ),
+                ))),
 
         // Draggable toolbar
         if (_isBarVisible)

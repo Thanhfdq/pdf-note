@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
+import 'package:pdf_note/constants/app_colors.dart';
 import 'package:pdf_note/constants/app_strings.dart';
 import 'package:pdf_note/models/canvas_element.dart';
 import 'package:pdf_note/providers/markdown_state.dart';
@@ -166,19 +167,29 @@ class FileService {
     );
   }
 
-  pw.Widget _renderPdfEraser(EraserStroke eraser) {
+  pw.Widget _renderPdfEraser(EraserStroke eraseStroke) {
     return pw.CustomPaint(
       size: const PdfPoint(500, 500),
       painter: (PdfGraphics canvas, PdfPoint size) {
         // Vẽ vùng bị xóa bằng màu trắng
-        canvas.setColor(const PdfColor(1, 1, 1)); // White color
-        canvas.drawEllipse(
-          eraser.position.dx,
-          size.y - eraser.position.dy, // Adjust Y-coordinate
-          eraser.strokeWidth,
-          eraser.strokeWidth,
-        );
-        canvas.fillPath(); // Fill the area
+        canvas.setColor(
+            PdfColor.fromInt(AppColors.defaultBackground.value)); // White color
+        canvas.setLineWidth(eraseStroke.strokeWidth);
+        // Draw path
+        final height = size.y;
+        if (eraseStroke.eraserDots.isNotEmpty) {
+          canvas.moveTo(
+            eraseStroke.eraserDots.first.dx,
+            height - eraseStroke.eraserDots.first.dy, // Adjust Y-coordinate
+          );
+          for (var point in eraseStroke.eraserDots.skip(1)) {
+            canvas.lineTo(
+              point.dx,
+              height - point.dy,
+            ); // Adjust Y-coordinate
+          }
+          canvas.strokePath(); // This uses the set properties
+        }
       },
     );
   }
