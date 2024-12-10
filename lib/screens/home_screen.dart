@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pdf_note/constants/app_colors.dart';
 import 'package:pdf_note/constants/app_strings.dart';
 import 'package:pdf_note/providers/tab_mangager.dart';
 import 'package:pdf_note/screens/markdown_editor.dart';
@@ -61,7 +62,7 @@ class HomeScreen extends StatelessWidget {
     final currentTab = tabsManager.tabs[tabsManager.currentTab];
     final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
     return Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.lightSecondary,
         key: scaffoldKey,
         appBar: CustomAppBar(
           filePath: currentTab.filePath,

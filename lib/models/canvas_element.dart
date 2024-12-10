@@ -37,12 +37,14 @@ class TextBox extends CanvasElement {
 
 class InsertImage extends CanvasElement {
   String imagePath;
+  Image uiImage;
   Size size;
 
   InsertImage({
     required Offset position,
     required this.imagePath,
     required this.size,
+    required this.uiImage,
     double rotation = 0,
   }) : super(position, rotation);
 }

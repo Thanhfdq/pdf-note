@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:pdf_note/components/custom_button.dart';
+import 'package:pdf_note/constants/app_colors.dart';
 import 'package:pdf_note/providers/tab_mangager.dart';
 import 'package:provider/provider.dart';
 
@@ -17,7 +17,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     final tabsManager = Provider.of<TabsManager>(context);
     return AppBar(
       elevation: 0,
-      backgroundColor: const Color(0xFFE6E6E6),
+      backgroundColor: AppColors.lightSecondary,
       leading: CustomButton(
         onPressed: () {
           // scaffoldKey.currentState?.openDrawer();

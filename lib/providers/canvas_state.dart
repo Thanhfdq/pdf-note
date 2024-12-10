@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:pdf_note/constants/app_colors.dart';
 import 'package:pdf_note/constants/app_numbers.dart';
@@ -54,13 +55,14 @@ class CanvasState extends ChangeNotifier {
   }
 
   // Add an image
-  void addImage(
-      Offset position, String imagePath, Size size, double? rotation) {
+  void addImage(Offset position, String imagePath, Size size, ui.Image uiImage,
+      double? rotation) {
     print("Add an image...");
     _canvasElements.add(InsertImage(
         position: position,
         rotation: rotation ?? 0,
         imagePath: imagePath,
+        uiImage: uiImage,
         size: size));
     notifyListeners();
   }

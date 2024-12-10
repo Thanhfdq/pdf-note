@@ -7,7 +7,7 @@ import 'package:pdf_note/providers/canvas_state.dart';
 
 class PdfState with ChangeNotifier {
   // List data of each page, a CanvasState is an page's data
-  List<CanvasState> _pageDatas = [
+  List<CanvasState> _canvasStates = [
     CanvasState()
   ]; // Default a pdf page always have 1 pdfData
   int _currentPage = 1; // Track the current page
@@ -21,19 +21,19 @@ class PdfState with ChangeNotifier {
 
   // Getters & Setter
   // pdf's data
-  List<CanvasState> get pageDatas => _pageDatas;
-  set pageDatas(List<CanvasState> value) {
-    _pageDatas = value;
+  List<CanvasState> get canvasStates => _canvasStates;
+  set canvasStates(List<CanvasState> value) {
+    _canvasStates = value;
     notifyListeners();
   }
 
   void addPage() {
-    _pageDatas.add(CanvasState());
+    _canvasStates.add(CanvasState());
     notifyListeners();
   }
 
   set removePage(int index) {
-    _pageDatas.removeAt(index);
+    _canvasStates.removeAt(index);
     notifyListeners();
   }
 

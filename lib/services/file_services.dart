@@ -1,8 +1,10 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf_note/constants/app_colors.dart';
+import 'package:pdf_note/constants/app_numbers.dart';
 import 'package:pdf_note/constants/app_strings.dart';
 import 'package:pdf_note/models/canvas_element.dart';
 import 'package:pdf_note/providers/markdown_state.dart';
@@ -101,7 +103,7 @@ class FileService {
     // Add to the PDF document
     final pdf = pw.Document();
     pdf.addPage(
-        pw.Page(pageFormat: PdfPageFormat.a4, build: (context) => pdfStack));
+        pw.Page(pageFormat: PdfPageFormat.a3, build: (context) => pdfStack));
     // Save or share the PDF
     String path = tabsManager.tabs[tabsManager.currentTab].filePath;
     Uint8List byteData = await pdf.save();
@@ -115,7 +117,7 @@ class FileService {
       canvasElements.whereType<InsertImage>().map(
             (element) async => MapEntry(
               element,
-              await FileHelper.getAssetImageBytes(element.imagePath),
+              await FileHelper.convertImageToUint8List(element.imagePath),
             ),
           ),
     );
@@ -142,7 +144,7 @@ class FileService {
 
   pw.Widget _renderPdfPath(InkStroke element) {
     return pw.CustomPaint(
-      size: const PdfPoint(500, 500),
+      size: const PdfPoint(AppNumbers.a4PageWidth, AppNumbers.a4Pageheight),
       painter: (PdfGraphics canvas, PdfPoint size) {
         // Set color and stroke width directly on the canvas
         canvas.setColor(PdfColor.fromInt(element.inkColor.value));
@@ -169,7 +171,7 @@ class FileService {
 
   pw.Widget _renderPdfEraser(EraserStroke eraseStroke) {
     return pw.CustomPaint(
-      size: const PdfPoint(500, 500),
+      size: const PdfPoint(AppNumbers.a4PageWidth, AppNumbers.a4Pageheight),
       painter: (PdfGraphics canvas, PdfPoint size) {
         // Vẽ vùng bị xóa bằng màu trắng
         canvas.setColor(
@@ -264,5 +266,41 @@ class FileService {
     print("...done.");
     tabsManager.addTab("new", "");
     tabsManager.setCurrentTab(0);
+  }
+
+  // Function to  handle insert image feature
+  Future<void> addImageToPdf(BuildContext context, int tabIndex, int pageIndex,
+      Offset position) async {
+    try {
+      // Step 1: Pick the image
+      final imagePicked = await FileHelper.pickImage();
+      if (imagePicked == null) {
+        print("No image selected.");
+        return;
+      }
+
+      // Step 2: Save image to cache
+      String cachedImagePath = await FileHelper.saveImageToCache(imagePicked);
+      if (cachedImagePath.isEmpty) {
+        print("Failed to save image to cache.");
+        return;
+      }
+
+      // Step 3: Get image size
+      final imageSize = await FileHelper.getImageSize(imagePicked.path);
+      print("Image size: ${imageSize.width} x ${imageSize.height}");
+
+      // Step 4: Get ui.Image
+      Uint8List? byteData =
+          await FileHelper.convertImageToUint8List(cachedImagePath);
+      final ui.Image image = await decodeImageFromList(byteData!);
+
+      // Step 5: Add image to PDF
+      final tabsManager = Provider.of<TabsManager>(context, listen: false);
+      tabsManager.tabs[tabIndex].pdfState?.canvasStates[pageIndex]
+          .addImage(position, cachedImagePath, imageSize, image, 0.0);
+    } catch (e) {
+      print("Error in addImageToPdf: $e");
+    }
   }
 }

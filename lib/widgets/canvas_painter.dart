@@ -1,8 +1,6 @@
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:pdf_note/constants/app_colors.dart';
-import 'package:pdf_note/utils/file_helper.dart';
 import 'package:pdf_note/models/canvas_element.dart';
 
 class CanvasPainter extends CustomPainter {
@@ -29,7 +27,7 @@ class CanvasPainter extends CustomPainter {
     final recorder = ui.PictureRecorder();
     final recordedCanvas = Canvas(recorder, Offset.zero & size);
     // Xóa nền bằng màu trắng hoặc màu nền mong muốn
-    // canvas.drawColor(Colors.white, BlendMode.src);
+    // canvas.drawColor(Colors.yellow, BlendMode.src);
     // Vẽ từng phần tử
     for (var element in canvasElements) {
       if (element is InkStroke) {
@@ -38,10 +36,9 @@ class CanvasPainter extends CustomPainter {
         _drawEraseStroke(recordedCanvas, element);
       } else if (element is TextBox) {
         _drawTextbox(recordedCanvas, element);
+      } else if (element is InsertImage) {
+        _drawImage(recordedCanvas, element);
       }
-      // else if (element is InsertImage) {
-      //   _drawImage(canvas, element);
-      // }
     }
 
     // Lưu lại Picture và Image
@@ -101,29 +98,26 @@ class CanvasPainter extends CustomPainter {
     textboxPainter.paint(canvas, textbox.position);
   }
 
-  // Draw the given texbox on canvas
-  // void _drawImage(Canvas canvas, InsertImage element) async {
-  //   Uint8List byteData = await FileHelper.getAssetImageBytes(element.imagePath);
-  //   final ui.Image image = await decodeImageFromList(byteData);
-
-  //   paintImage(
-  //     canvas: canvas,
-  //     rect: Rect.fromLTWH(
-  //       element.position.dx,
-  //       element.position.dy,
-  //       element.size.width,
-  //       element.size.height,
-  //     ),
-  //     image: image,
-  //   );
-  // }
+  // Draw the given image on canvas
+  void _drawImage(Canvas canvas, InsertImage element) {
+    paintImage(
+      canvas: canvas,
+      rect: Rect.fromLTWH(
+        element.position.dx,
+        element.position.dy,
+        element.size.width,
+        element.size.height,
+      ),
+      image: element.uiImage,
+    );
+  }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 
   // Hàm để xóa cache (nếu cần khởi tạo lại)
-  // void clearCache() {
-  //   _cachedPicture = null;
-  //   _cachedImage = null;
-  // }
+  void clearCache() {
+    _cachedPicture = null;
+    _cachedImage = null;
+  }
 }
