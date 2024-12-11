@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf_note/constants/app_colors.dart';
-import 'package:pdf_note/constants/app_numbers.dart';
 import 'package:pdf_note/constants/app_strings.dart';
 import 'package:pdf_note/models/canvas_element.dart';
 import 'package:pdf_note/providers/markdown_state.dart';
@@ -94,16 +93,20 @@ class FileService {
     tabsManager.tabs[tabsManager.currentTab].markdownState?.printState();
   }
 
-  void savePdfNote(
-      BuildContext context, List<CanvasElement> canvasElements) async {
+  void savePdfNote(BuildContext context, List<CanvasElement> canvasElements,
+      ui.Size canvasSize) async {
     print("Saving in fileServices...");
     final tabsManager = Provider.of<TabsManager>(context, listen: false);
     // Build the stack
-    final pdfStack = await buildPdfStack(canvasElements);
+    final pdfStack = await buildPdfStack(canvasElements, canvasSize);
     // Add to the PDF document
     final pdf = pw.Document();
-    pdf.addPage(
-        pw.Page(pageFormat: PdfPageFormat.a3, build: (context) => pdfStack));
+    // Calculate the PDF page format based on the A4 ratio
+    final double pdfWidth = canvasSize.width;
+    // final double pdfHeight = pdfWidth * AppNumbers.a4AspectRatio;
+    final double pdfHeight = canvasSize.height;
+    final pageFormat = PdfPageFormat(pdfWidth, pdfHeight);
+    pdf.addPage(pw.Page(pageFormat: pageFormat, build: (context) => pdfStack));
     // Save or share the PDF
     String path = tabsManager.tabs[tabsManager.currentTab].filePath;
     Uint8List byteData = await pdf.save();
@@ -111,7 +114,8 @@ class FileService {
   }
 
   // Prepare pdf content from editor
-  Future<pw.Stack> buildPdfStack(List<CanvasElement> canvasElements) async {
+  Future<pw.Stack> buildPdfStack(
+      List<CanvasElement> canvasElements, Size canvasSize) async {
     // Preload image bytes for all ImageElement
     final preloadedImages = await Future.wait(
       canvasElements.whereType<InsertImage>().map(
@@ -129,22 +133,22 @@ class FileService {
     return pw.Stack(
       children: canvasElements.map((element) {
         if (element is InkStroke) {
-          return _renderPdfPath(element);
+          return _renderPdfPath(element, canvasSize);
         } else if (element is TextBox) {
           return _renderPdfText(element);
         } else if (element is InsertImage) {
           return _renderPdfImage(element, imageBytesMap[element]!);
         } else if (element is EraserStroke) {
-          return _renderPdfEraser(element);
+          return _renderPdfEraser(element, canvasSize);
         }
         return pw.Container();
       }).toList(),
     );
   }
 
-  pw.Widget _renderPdfPath(InkStroke element) {
+  pw.Widget _renderPdfPath(InkStroke element, ui.Size canvasSize) {
     return pw.CustomPaint(
-      size: const PdfPoint(AppNumbers.a4PageWidth, AppNumbers.a4Pageheight),
+      size: PdfPoint(canvasSize.width, canvasSize.height),
       painter: (PdfGraphics canvas, PdfPoint size) {
         // Set color and stroke width directly on the canvas
         canvas.setColor(PdfColor.fromInt(element.inkColor.value));
@@ -169,9 +173,9 @@ class FileService {
     );
   }
 
-  pw.Widget _renderPdfEraser(EraserStroke eraseStroke) {
+  pw.Widget _renderPdfEraser(EraserStroke eraseStroke, ui.Size canvasSize) {
     return pw.CustomPaint(
-      size: const PdfPoint(AppNumbers.a4PageWidth, AppNumbers.a4Pageheight),
+      size: PdfPoint(canvasSize.width, canvasSize.height),
       painter: (PdfGraphics canvas, PdfPoint size) {
         // Vẽ vùng bị xóa bằng màu trắng
         canvas.setColor(

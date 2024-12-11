@@ -29,6 +29,8 @@ class _PdfEditorScreenState extends State<PdfEditorScreen> {
 
   // Canvas data of current page
   CanvasState canvasData = CanvasState();
+  // Canvas key
+  final GlobalKey _canvasKey = GlobalKey();
 
   @override
   void initState() {
@@ -63,6 +65,16 @@ class _PdfEditorScreenState extends State<PdfEditorScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
     final int appBarHeight = Scaffold.of(context).appBarMaxHeight!.toInt();
+    //init canvas size
+    double canvasWidth;
+    double canvasHeight;
+    canvasWidth = screenWidth;
+    canvasHeight = screenWidth * AppNumbers.a4AspectRatio;
+    if (canvasHeight > screenHeight) {
+      canvasHeight = screenHeight;
+      canvasWidth = canvasHeight / AppNumbers.a4AspectRatio;
+    }
+
     // Get state datas
     final tabsManager = Provider.of<TabsManager>(context, listen: false);
     final currentPdfState = tabsManager.tabs[tabsManager.currentTab].pdfState;
@@ -73,18 +85,16 @@ class _PdfEditorScreenState extends State<PdfEditorScreen> {
     return Stack(children: [
       Center(
         child: Container(
-          // width: 480,
-          // height: 725,
-          width: AppNumbers.a4PageWidth,
-          height: AppNumbers.a4Pageheight,
+          width: canvasWidth,
+          height: canvasHeight,
           decoration: BoxDecoration(
               border: Border.all(
                   color: Colors.black,
                   strokeAlign: BorderSide.strokeAlignOutside,
                   width: 1)),
           child: InteractiveViewer(
-            boundaryMargin: const EdgeInsets.all(double.infinity),
-            minScale: 0.5,
+            boundaryMargin: EdgeInsets.zero,
+            minScale: 1.0,
             maxScale: 3.0,
             child: GestureDetector(
               onPanStart: (details) {
@@ -108,8 +118,7 @@ class _PdfEditorScreenState extends State<PdfEditorScreen> {
                 });
               },
               child: Container(
-                width: 500,
-                height: 500,
+                key: _canvasKey,
                 decoration: BoxDecoration(
                     color: Colors.white,
                     border: Border.all(
@@ -313,11 +322,16 @@ class _PdfEditorScreenState extends State<PdfEditorScreen> {
 
   void _save() {
     final tabsManager = Provider.of<TabsManager>(context, listen: false);
+
+    final RenderBox renderBox =
+        _canvasKey.currentContext!.findRenderObject() as RenderBox;
+    final Size canvasSize = renderBox.size;
     setState(() {
       FileService().savePdfNote(
           context,
           tabsManager.tabs[tabsManager.currentTab].pdfState!.canvasStates[0]
-              .canvasElements);
+              .canvasElements,
+          canvasSize);
     });
     print("Saving...");
   }
