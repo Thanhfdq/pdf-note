@@ -31,6 +31,10 @@ class _PdfEditorScreenState extends State<PdfEditorScreen> {
   CanvasState canvasData = CanvasState();
   // Canvas key
   final GlobalKey _canvasKey = GlobalKey();
+  // Save the current moved object
+  CanvasElement? _movingElement;
+  late int _movingElementIndex;
+  Offset? _initialTouchOffset;
 
   @override
   void initState() {
@@ -104,6 +108,9 @@ class _PdfEditorScreenState extends State<PdfEditorScreen> {
                   } else if (currentPdfState.currentTool ==
                       AppStrings.eraserTool) {
                     newEraseStroke(details.localPosition);
+                  } else {
+                    // Moving mode
+                    onPanStart(details);
                   }
                 });
               },
@@ -114,8 +121,14 @@ class _PdfEditorScreenState extends State<PdfEditorScreen> {
                   } else if (currentPdfState.currentTool ==
                       AppStrings.eraserTool) {
                     eraseStrokeExtense(details.localPosition);
+                  } else {
+                    // Moving mode
+                    onPanUpdate(details);
                   }
                 });
+              },
+              onPanEnd: (details) {
+                onPanEnd(details);
               },
               child: Container(
                 key: _canvasKey,
@@ -187,6 +200,14 @@ class _PdfEditorScreenState extends State<PdfEditorScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
                           IconButton(
+                            icon: Icon(CupertinoIcons.cursor_rays,
+                                color: currentPdfState.currentTool ==
+                                        AppStrings.moving
+                                    ? Colors.blue
+                                    : Colors.white),
+                            onPressed: () => _changeTool(AppStrings.moving),
+                          ),
+                          IconButton(
                             icon: const Icon(CupertinoIcons.down_arrow,
                                 color: Colors.white),
                             onPressed: _save,
@@ -224,7 +245,7 @@ class _PdfEditorScreenState extends State<PdfEditorScreen> {
                             icon: const Icon(CupertinoIcons.tree,
                                 color: Colors.white),
                             onPressed: () {
-                              addImage();
+                              setState(() => addImage());
                             },
                           ),
                           IconButton(
@@ -334,5 +355,74 @@ class _PdfEditorScreenState extends State<PdfEditorScreen> {
           canvasSize);
     });
     print("Saving...");
+  }
+
+//Moving object event handle
+  void onPanStart(DragStartDetails details) {
+    print("Start move...");
+    final touchPosition = details.localPosition;
+
+    for (int i = 0; i < canvasData.canvasElements.length; i++) {
+      print(i);
+      final element = canvasData.canvasElements[i];
+      if (element is TextBox) {
+        if (element.constainsPoint(touchPosition)) {
+          print("moving a textbox...");
+          _movingElement = element;
+          _movingElementIndex =
+              i; // save the moving element index for change position
+          _initialTouchOffset = touchPosition - element.position;
+          break;
+        }
+      } else if (element is InsertImage) {
+        print("moving an image...");
+        if (element.constainsPoint(touchPosition)) {
+          _movingElement = element;
+          _movingElementIndex = i;
+          _initialTouchOffset =
+              touchPosition - Offset(element.position.dx, element.position.dy);
+          break;
+        }
+      }
+      // InkStroke handling depends on your requirements (e.g., bounding box or selection handle).
+    }
+  }
+
+  void onPanUpdate(DragUpdateDetails details) {
+    print("moving...");
+    if (_movingElement != null && _initialTouchOffset != null) {
+      final touchPosition = details.localPosition;
+      final element = canvasData.canvasElements[_movingElementIndex];
+      if (element is TextBox) {
+        element.position = touchPosition - _initialTouchOffset!;
+      } else if (element is InsertImage) {
+        final dx = touchPosition.dx - _initialTouchOffset!.dx;
+        final dy = touchPosition.dy - _initialTouchOffset!.dy;
+        element.position = Offset(dx, dy);
+      }
+
+      // if (_movingElement is TextBox) {
+      //   (_movingElement as TextBox).position =
+      //       touchPosition - _initialTouchOffset!;
+      // } else if (_movingElement is InsertImage) {
+      //   final dx = touchPosition.dx - _initialTouchOffset!.dx;
+      //   final dy = touchPosition.dy - _initialTouchOffset!.dy;
+      //   (_movingElement as InsertImage).position = Offset(dx, dy);
+      // }
+      // For InkStroke, update its points or bounding box.
+      // updateCanvas();
+    }
+  }
+
+  void onPanEnd(DragEndDetails details) {
+    print("end move.");
+    _movingElement = null;
+    _initialTouchOffset = null;
+  }
+
+  void updateCanvas() {
+    setState(() {
+      // Trigger a repaint of the canvas.
+    });
   }
 }

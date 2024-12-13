@@ -8,5 +8,5 @@ class AppStrings {
   // Pdf tool
   static const penTool = "pen";
   static const eraserTool = "eraser";
-  static const editing = "editing";
+  static const moving = "moving";
 }

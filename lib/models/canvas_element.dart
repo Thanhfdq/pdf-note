@@ -5,6 +5,8 @@ abstract class CanvasElement {
   double? rotation;
 
   CanvasElement(this.position, this.rotation);
+
+  bool constainsPoint(Offset point);
 }
 
 class InkStroke extends CanvasElement {
@@ -19,6 +21,12 @@ class InkStroke extends CanvasElement {
       required this.inkDots,
       required this.strokeWidth})
       : super(position, rotation);
+
+  @override
+  bool constainsPoint(Offset point) {
+    // TODO: implement constainsPoint
+    throw UnimplementedError();
+  }
 }
 
 class TextBox extends CanvasElement {
@@ -33,6 +41,16 @@ class TextBox extends CanvasElement {
     required this.textColor,
     double rotation = 0,
   }) : super(position, rotation);
+
+  @override
+  bool constainsPoint(Offset point) {
+    // Assume the text box has a width and height based on text layout
+    final textWidth = content.length * fontSize * 0.5; // Approximation
+    final textHeight = fontSize; // Single-line height
+
+    final rect = Rect.fromLTWH(position.dx, position.dy, textWidth, textHeight);
+    return rect.contains(point);
+  }
 }
 
 class InsertImage extends CanvasElement {
@@ -47,6 +65,13 @@ class InsertImage extends CanvasElement {
     required this.uiImage,
     double rotation = 0,
   }) : super(position, rotation);
+
+  @override
+  bool constainsPoint(Offset point) {
+    final rect =
+        Rect.fromLTWH(position.dx, position.dy, size.width, size.height);
+    return rect.contains(point);
+  }
 }
 
 class EraserStroke extends CanvasElement {
@@ -58,4 +83,10 @@ class EraserStroke extends CanvasElement {
       required Offset position,
       required this.strokeWidth})
       : super(position, 0.0);
+
+  @override
+  bool constainsPoint(Offset point) {
+    // TODO: implement constainsPoint
+    throw UnimplementedError();
+  }
 }
